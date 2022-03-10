@@ -4,7 +4,6 @@ from bot import client
 from dotenv import load_dotenv
 from threading import Thread
 from functools import partial
-# from discord.ext import commands
 import time
 import os
 import db
@@ -47,7 +46,6 @@ def insert_book():
 		"price": book.price, 
 		"sellers": book.sellers
 		}
-	print(type(book.sellers))
 
 	db.db.books_collection.insert_one(book_dict)
 	return f"Book name: {book.name} | Department: {book.department} | Course: {book.course_name} | Price: {book.price}"
@@ -74,11 +72,11 @@ def insert_seller(name, link, buy, rent, location):
 	return "Added seller to book"
 
 if __name__ == '__main__':
+	load_dotenv(".env")
 	partial_run = partial(app.run, host="0.0.0.0", port=8000, debug=True, use_reloader=False)
-	# load_dotenv('.env')
 	t = Thread(target=partial_run)
 	t.start()
-	bot = client.run("OTQxNDQzMzc1MDUwMTU0MDE1.YgWBdw.SJMeedraKiNlQuUBya_-yu1fmS4", bot=True)
+	bot = client.run("OTQxNDQzMzc1MDUwMTU0MDE1.YgWBdw.LeFD_15NEXvfJ80TRjmFBLnNN-k", bot=True)
 
 	
 	
