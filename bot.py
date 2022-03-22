@@ -3,11 +3,27 @@ from discord.ext import commands
 import os
 import requests
 import json
-# from color import color
+from verify_email import verify_email
 from termcolor import colored
+
+# import dns.resolver
+# import socket
+# import smtplib, ssl
+
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
+
+# def verify_student(school, email):
+# 	records = dns.resolver.query('pcockril@gmu.edu')
+# 	host = socket.gethostname()
+# 	server = smtplib.SMTP()
+# 	server.set_debuglevel(0)
+
+# 	server.connect(mxRecord)
+# 	if (verify_email(email)):
+# 		if ('@gmu.edu' in email):
+
 
 def get_book(department, course_num):
 	response = requests.get(f"http://localhost:8000/book/{department}/{course_num}")

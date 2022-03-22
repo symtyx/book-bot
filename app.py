@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request
+from flask_mail import *
+from random import *
 from json import dumps, loads
 from bot import client
 from dotenv import load_dotenv
@@ -10,6 +12,24 @@ import db
 
 from book import Book, Seller
 app = Flask(__name__)
+mail = Mail(app)
+
+app.config["MAIL_SERVER"]='smtp.gmail.com'  
+app.config["MAIL_PORT"] = 465      
+app.config["MAIL_USERNAME"] = 'queuedelivery@gmail.com'  
+app.config['MAIL_PASSWORD'] = 'PatPC021862?'  
+app.config['MAIL_USE_TLS'] = False  
+app.config['MAIL_USE_SSL'] = True  
+mail = Mail(app)  
+otp = randint(000000,999999)  
+
+@app.route('/validate', methods=["POST"])   
+def validate():  
+	user_otp = request.form['otp']  
+	if otp == int(user_otp):  
+		return "<h3> Email  verification is  successful </h3>" 
+
+	return "<h3>failure, OTP does not match</h3>"   
 
 @app.route('/')
 def get_books():
@@ -70,6 +90,14 @@ def insert_seller(name, link, buy, rent, location):
 	for doc in book:
 		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller}})
 	return "Added seller to book"
+
+@app.route('/verify/<email>')
+def verify(email):  
+	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
+	msg.body = f"TESTING VERIFICATION EMAIL... HELLO.\n {otp}\nhttp://localhost:8000/verify/{email}" 
+	mail.send(msg)  
+	return render_template('email.html')
+
 
 if __name__ == '__main__':
 	load_dotenv(".env")
