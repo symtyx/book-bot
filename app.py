@@ -23,13 +23,18 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)  
 otp = randint(000000,999999)  
 
+@app.route('/load_validation', methods=["GET"])
+def load_validation():
+	return render_template("email.html")
+
 @app.route('/validate', methods=["POST"])   
 def validate():  
+	if (request.method == "GET"):
+		return render_template("email.html")
 	user_otp = request.form['otp']  
-	if otp == int(user_otp):  
-		return "<h3> Email  verification is  successful </h3>" 
-
-	return "<h3>failure, OTP does not match</h3>"   
+	if otp == int(user_otp): 
+		return "<h3> Email  verification is  successful </h3>"  
+	return "<h3>failure, OTP does not match</h3>"
 
 @app.route('/')
 def get_books():
@@ -72,31 +77,33 @@ def insert_book():
 
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax
-@app.route('/book/insert/seller/<name>/<link>/<buy>/<rent>/<location>')
-def insert_seller(name, link, buy, rent, location):
-	print(link)
+@app.route('/book/insert/seller/<dep>/<cnum>/<name>/<link>/<buy>/<rent>/<location>', methods=["POST"])
+def insert_seller(dep, cnum, name, link, buy, rent, location):
 	seller = {
 			"name": name, 
 			"link": link, 
 			"buy": bool(buy), 
 			"rent": bool(rent), 
-			"location": location
+			"location": location,
+			"verified": False,
 			}
 
 	# FIXME: This query should be the parameter passed into the bot command
-	query = {"department": "CS", "course": "112"}
+	query = {"department": dep, "course": cnum}
 	book = db.db.books_collection.find(query)
 
 	for doc in book:
 		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller}})
 	return "Added seller to book"
 
-@app.route('/verify/<email>')
+@app.route('/book/insert/seller/verified', methods=["PUT"])
+
+@app.route('/verify/<email>', methods=["POST"])
 def verify(email):  
 	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
-	msg.body = f"TESTING VERIFICATION EMAIL... HELLO.\n {otp}\nhttp://localhost:8000/verify/{email}" 
+	msg.body = f"Please click on the link to verify your student seller status\n {otp}\nhttp://localhost:8000/load_validation" 
 	mail.send(msg)  
-	return render_template('email.html')
+	return "Success"
 
 
 if __name__ == '__main__':

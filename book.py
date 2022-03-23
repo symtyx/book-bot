@@ -17,11 +17,13 @@ class Book:
 
 
 class Seller:
-	def __init__(self, name, link, buy, rent, location):
+	def __init__(self, name, link, buy, rent, location, verified):
 		self.name = name
 		self.link = link
-		self.location = location
 		self.buy = buy
 		self.rent = rent
+		self.location = location
+		self.verified = verified
+
 		# self.email = email
 
