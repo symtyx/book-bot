@@ -11,17 +11,21 @@ import asyncio
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
+def insert_seller(dep, cnum, name, link, buy_price, rent_price, location):
+	return requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{name}/{link}/{buy_price}/{rent_price}/{location}")
 
-def verify_student(email):
+def verify_student(email, dep, cnum):
 	if ('@gmu.edu' in email):
-		response = requests.post(f"http://localhost:8000/verify/{email}")
+		response = requests.post(f"http://localhost:8000/verify/{email}/{dep}/{cnum}")
 		return response
 
 	return "Please enter a valid email"
 
-
 def get_book(department, course_num):
 	response = requests.get(f"http://localhost:8000/book/{department}/{course_num}")
+	print(response)
+	if (response == None):
+		return None
 	json_data = json.loads(response.text)
 	return json_data
 
@@ -33,6 +37,10 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+	if (message.content.startswith("!bot help")):
+		msg = "To check for a course textbook enter:\n'!bot check <department> <course_num>\n\nTo add yourself as a seller enter:\n'!bot add <department> <course_num> <your_name> <gmu_email> <buy_price> <rent_price> <city>'"
+		await message.channel.send(msg)
+
 	if (message.content.startswith('!bot check')):
 		args = message.content.split()
 		book = get_book(args[2], args[3])
@@ -59,12 +67,15 @@ async def on_message(message):
 	if (message.content.startswith('!bot add')):
 		args = message.content.split()
 		book = get_book(args[2], args[3])
+		if (book == None):
+			await message.channel.send("Course requirements not found.")
+			return
 
 		def check(msg):
 			return msg.author == message.author and 'Y' in msg.content
 		# string = "/book/insert/seller/<dep>/<cnum>/<link>/<buy>/<rent>/<location>"
 		# | 2: dep | 3: cnum | 4: link | 5: buy | 6: rent | 7: location |
-		email = args[4]
+		email = args[5]
 		
 		embed = discord.Embed(title=f"Is this your book (enter Y/N)?\n\n", description=f"\n{book['name']}\n", color=0xFFD700)
 		await message.channel.send(embed=embed)
@@ -75,14 +86,28 @@ async def on_message(message):
 			await message.channel.send("Sorry, you didn't reply in time.")
 
 		if (msg.content):
-			verify_student(email)
+			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+			verify_student(email, args[2], args[3])
 			await message.channel.send("OK!")
 		else:
 			await message.channel.send("Sorry you can't add that.")
 
-@tasks.loop(seconds=60)
-async def monitor():
 
-	await bot.wait_until_ready()
-	monitorVerification()
+
+
+
+
+
+
+
+
+
+
+
+
+# @tasks.loop(seconds=60)
+# async def monitor():
+
+# 	await bot.wait_until_ready()
+# 	monitorVerification()
 

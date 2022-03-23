@@ -21,7 +21,7 @@ app.config['MAIL_PASSWORD'] = 'PatPC021862?'
 app.config['MAIL_USE_TLS'] = False  
 app.config['MAIL_USE_SSL'] = True  
 mail = Mail(app)  
-otp = randint(000000,999999)  
+otp = randint(000000,999999)
 
 @app.route('/load_validation', methods=["GET"])
 def load_validation():
@@ -29,11 +29,18 @@ def load_validation():
 
 @app.route('/validate', methods=["POST"])   
 def validate():  
-	if (request.method == "GET"):
-		return render_template("email.html")
+	user_email = request.form['email']
 	user_otp = request.form['otp']  
-	if otp == int(user_otp): 
-		return "<h3> Email  verification is  successful </h3>"  
+
+	args = user_otp.split('-')
+	# check if numbervalue is equal to otp generated
+	if int(args[0]) == otp: 
+		query = {"department": args[1], "course": args[2]}
+		book = db.db.books_collection.find(query)
+		for doc in book:
+			db.db.books_collection.update_one(query, {"$set": {"sellers.$[t].verified": True}}, 
+												array_filters=[{"t.link": user_email}])
+		return "<h3>Your seller status has been activated.</h3>"  
 	return "<h3>failure, OTP does not match</h3>"
 
 @app.route('/')
@@ -50,42 +57,54 @@ def get_books():
 
 # localhost:8000/book?course=<course>&number=<course-number>
 @app.route('/book/<department>/<course_num>', methods=['GET'])
-def get_book(department, course_num):
+def book(department, course_num):
 	query = {"department": department, "course": course_num}
 	document = db.db.books_collection.find(query, {"_id": 0})
 	
 	for book in document:	
 		return dumps(book)
+	return dumps(None)
 
 
-@app.route('/book/insert')
-def insert_book():
-	seller = Seller("GMU Bookstore", "https://gmu.bncollege.com/course-material/course-finder", True, True, "Fairfax Campus")
-	seller_dict = {"name": seller.name, "link": seller.link, "buy": seller.buy, "rent": seller.rent, "location": seller.location}
-	book = Book("Introduction to Python Programming", "CS", "112", 45.50, seller_dict)
+@app.route('/book/insert/<dep>/<cnum>/<name>/<link>/<buy_price>/<rent_price>', methods=["POST"])
+def insert_book(dep, cnum, name, link, buy_price, rent_price):
+	# Initialize book with the GMU bookstore seller information
+	seller = Seller("GMU Bookstore", link, float(buy_price), float(rent_price), "Fairfax Campus", True)
+	
+	# Initialize seller and book data with request params and seller data
+	bookstore_dict = {"name": seller.name, "link": seller.link, "buy": seller.buy,
+					"buy_price": seller.buy_price, "rent": seller.rent, "rent_price": seller.rent_price, 
+					"location": seller.location,
+					"verified": seller.verified
+				}
+	book = Book(name, dep, cnum, bookstore_dict)
 
+	# create dict struct to insert proper format into Mongo collection
 	book_dict = {
 		"name": book.name, 
 		"department": book.department,
 		"course": book.course_name, 
-		"price": book.price, 
 		"sellers": book.sellers
 		}
 
+	# Insert book into Database
 	db.db.books_collection.insert_one(book_dict)
-	return f"Book name: {book.name} | Department: {book.department} | Course: {book.course_name} | Price: {book.price}"
+	return f"Book name: {book.name} | Department: {book.department} | Course: {book.course_name}"
 
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax
-@app.route('/book/insert/seller/<dep>/<cnum>/<name>/<link>/<buy>/<rent>/<location>', methods=["POST"])
-def insert_seller(dep, cnum, name, link, buy, rent, location):
-	seller = {
-			"name": name, 
-			"link": link, 
-			"buy": bool(buy), 
-			"rent": bool(rent), 
-			"location": location,
-			"verified": False,
+@app.route('/book/insert/seller/<dep>/<cnum>/<name>/<link>/<buy_price>/<rent_price>/<location>', methods=["POST"])
+def insert_seller(dep, cnum, name, link, buy_price, rent_price, location, methods=["POST"]):
+	seller = Seller(name, link, float(buy_price), float(rent_price), location, False)
+	seller_dict = {
+			"name": seller.name, 
+			"link": seller.link, 
+			"buy": seller.buy,
+			"buy_price": seller.buy_price,
+			"rent": seller.rent,
+			"rent_price": seller.rent_price, 
+			"location": seller.location,
+			"verified": seller.verified,
 			}
 
 	# FIXME: This query should be the parameter passed into the bot command
@@ -93,15 +112,14 @@ def insert_seller(dep, cnum, name, link, buy, rent, location):
 	book = db.db.books_collection.find(query)
 
 	for doc in book:
-		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller}})
+		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller_dict}})
 	return "Added seller to book"
 
-@app.route('/book/insert/seller/verified', methods=["PUT"])
-
-@app.route('/verify/<email>', methods=["POST"])
-def verify(email):  
+@app.route('/verify/<email>/<dep>/<cnum>', methods=["POST"])
+def verify(email, dep, cnum):  
+	send_otp = f"{otp}-{dep}-{cnum}"
 	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
-	msg.body = f"Please click on the link to verify your student seller status\n {otp}\nhttp://localhost:8000/load_validation" 
+	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/load_validation" 
 	mail.send(msg)  
 	return "Success"
 

@@ -2,26 +2,36 @@
 
 class Book:
 	sellers = list()
-	def __init__(self, name, department, course_name, price, seller):
+	def __init__(self, name, department, course_name, seller):
 		self.sellers = list()
 		self.sellers.append(seller)
 		self.name = name
 		self.department = department
 		self.course_name = course_name
-		self.price = price
-		# self.book_type = book_type
-		# self.sellers = sellers
 
 	def insert_seller(self, seller):
 		self.sellers.append(seller)
 
 
 class Seller:
-	def __init__(self, name, link, buy, rent, location, verified):
+	buy = False
+	rent = False
+
+	def __init__(self, name, link, buy_price, rent_price, location, verified):
 		self.name = name
 		self.link = link
-		self.buy = buy
-		self.rent = rent
+
+		if buy_price == 0.00:
+			self.buy = False
+		else:
+			self.buy = True
+
+		if (rent_price == 0.00):
+			self.rent = False
+		else: 
+			self.rent = True
+		self.buy_price = buy_price
+		self.rent_price = rent_price
 		self.location = location
 		self.verified = verified
 
