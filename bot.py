@@ -23,9 +23,9 @@ def verify_student(email, dep, cnum):
 
 def get_book(department, course_num):
 	response = requests.get(f"http://localhost:8000/book/{department}/{course_num}")
-	print(response)
 	if (response == None):
 		return None
+
 	json_data = json.loads(response.text)
 	return json_data
 
@@ -91,18 +91,6 @@ async def on_message(message):
 			await message.channel.send("OK!")
 		else:
 			await message.channel.send("Sorry you can't add that.")
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # @tasks.loop(seconds=60)

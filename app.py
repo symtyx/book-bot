@@ -23,26 +23,6 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)  
 otp = randint(000000,999999)
 
-@app.route('/load_validation', methods=["GET"])
-def load_validation():
-	return render_template("email.html")
-
-@app.route('/validate', methods=["POST"])   
-def validate():  
-	user_email = request.form['email']
-	user_otp = request.form['otp']  
-
-	args = user_otp.split('-')
-	# check if numbervalue is equal to otp generated
-	if int(args[0]) == otp: 
-		query = {"department": args[1], "course": args[2]}
-		book = db.db.books_collection.find(query)
-		for doc in book:
-			db.db.books_collection.update_one(query, {"$set": {"sellers.$[t].verified": True}}, 
-												array_filters=[{"t.link": user_email}])
-		return "<h3>Your seller status has been activated.</h3>"  
-	return "<h3>failure, OTP does not match</h3>"
-
 @app.route('/')
 def get_books():
 	try:
@@ -122,6 +102,26 @@ def verify(email, dep, cnum):
 	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/load_validation" 
 	mail.send(msg)  
 	return "Success"
+
+@app.route('/load_validation', methods=["GET"])
+def load_validation():
+	return render_template("email.html")
+
+@app.route('/validate', methods=["POST"])   
+def validate():  
+	user_email = request.form['email']
+	user_otp = request.form['otp']  
+
+	args = user_otp.split('-')
+	# check if numbervalue is equal to otp generated
+	if int(args[0]) == otp: 
+		query = {"department": args[1], "course": args[2]}
+		book = db.db.books_collection.find(query)
+		for doc in book:
+			db.db.books_collection.update_one(query, {"$set": {"sellers.$[t].verified": True}}, 
+												array_filters=[{"t.link": user_email}])
+		return "<h3>Your seller status has been activated.</h3>"  
+	return "<h3>failure, OTP does not match</h3>"
 
 
 if __name__ == '__main__':
