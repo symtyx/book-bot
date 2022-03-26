@@ -52,8 +52,11 @@ def insert_book(dep, cnum, name, link, buy_price, rent_price):
 	seller = Seller("GMU Bookstore", link, float(buy_price), float(rent_price), "Fairfax Campus", True)
 	
 	# Initialize seller and book data with request params and seller data
-	bookstore_dict = {"name": seller.name, "link": seller.link, "buy": seller.buy,
-					"buy_price": seller.buy_price, "rent": seller.rent, "rent_price": seller.rent_price, 
+	bookstore_dict = {"name": seller.name, "link": seller.link, 
+					"buy": seller.buy,
+					"buy_price": seller.buy_price, 
+					"rent": seller.rent, 
+					"rent_price": seller.rent_price, 
 					"location": seller.location,
 					"verified": seller.verified
 				}
@@ -87,7 +90,6 @@ def insert_seller(dep, cnum, name, link, buy_price, rent_price, location, method
 			"verified": seller.verified,
 			}
 
-	# FIXME: This query should be the parameter passed into the bot command
 	query = {"department": dep, "course": cnum}
 	book = db.db.books_collection.find(query)
 

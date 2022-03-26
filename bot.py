@@ -86,12 +86,13 @@ async def on_message(message):
 			await message.channel.send("Sorry, you didn't reply in time.")
 
 		if (msg.content):
+			# parameter 3 will save the seller with their discord user handle so prospective 
+			# buyers can add them on discord to exchange textbooks.
 			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], args[8])
-			verify_student(email, args[2], args[3])
+			verify_student(args[4], args[2], args[3])
 			await message.channel.send("OK!")
 		else:
 			await message.channel.send("Sorry you can't add that.")
-
 
 # @tasks.loop(seconds=60)
 # async def monitor():

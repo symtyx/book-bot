@@ -1,5 +1,3 @@
-import requests
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -26,9 +24,11 @@ options.add_argument("--no-sandbox")
 # options.add_argument("--disable-extensions")
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-# driver.maximize_window()
+driver.maximize_window()
 departments = []
 courses = []
+sections = []
+
 
 def select_campus_info():
     try:
@@ -85,27 +85,17 @@ def select_department(department):
             EC.presence_of_element_located((By.XPATH,
                                             '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div/span[2]/span/span[1]/input'))
         )
-        selector = Select(driver.find_element(by=By.XPATH, value="/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div/select"))
-        options = selector.options
-        # print(options)
-        # departments = []
-        for index in range(0, len(options)):
-            if (options[index].text == "Select"):
-                continue
-            dep_dict = {"department": options[index].text}
-            departments.append(dep_dict)
         element.send_keys(department)
         # print('typed department cs')
 
         element.send_keys(Keys.ENTER)
         # print('selected department cs')
-
     except:
         return 1
 
     return 0
 
-def select_course(course, department):
+def select_course(course):
     try:
         element = WebDriverWait(driver, 1).until(
             EC.presence_of_element_located((By.XPATH,
@@ -118,26 +108,8 @@ def select_course(course, department):
             EC.presence_of_element_located((By.XPATH,
                                             '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/span[2]/span/span[1]/input'))
         )
-        # element.send_keys(course)
-        # print('typed course 321')
-        # FIXME: We need a way to get the course number list on the selected department...
-        selector = Select(driver.find_element(by=By.XPATH, value="/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/select"))
-        options = selector.options
-        index = 0
-        courses = []
-        for dep in departments:
-            print(dep['department'])
-            if dep['department'] == department:
-                 break
-            index += 1
-
-        for ind in range(0, len(options)):
-            if (options[ind].text == "Select"):
-                continue
-            courses.append(options[ind].text)
-
-        departments[index]['courses'] = courses
-        # element.send_keys(Keys.ENTER)
+        element.send_keys(course)
+        element.send_keys(Keys.ENTER)
         # print('selected course 321')
 
     except:
@@ -146,11 +118,6 @@ def select_course(course, department):
     return 0
 
 def fill_textbook_info(term, department, course, section):
-    while(select_campus_info()):
-        print('selecting campus')
-
-    while(select_term(term)):
-        print('selecting term')
 
     while(select_department(department)):
         print('selecting department')
@@ -164,17 +131,36 @@ def fill_textbook_info(term, department, course, section):
     # while(retrieve_material()):
     #     print('retrieving material')
 
+def clear_form():
+    
+    try:
+        element = WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[5]/div/a'))
+        )
+        element.click()
+    except:
+        return 1
+    return 0
+
 def main():
     start = time.time()
     driver.get("https://gmu.bncollege.com/course-material/course-finder")
 
-    fill_textbook_info('summer', 'CS', 310, '002')
-    print(departments)
+    # while(select_campus_info()):
+    #     print('selecting campus')
+
+    # while(select_term("spring")):
+    #     print('selecting term')
+    # while(fill_departments()):
+    #     print("filling departments")
+
+    # fill_textbook_info('spring', 'CS', 310, '002')
 
     # curUrl = driver.current_url
     # print(curUrl)
 
-    time.sleep(15)
+    time.sleep(100)
     end = time.time()
     print(end - start)
 
