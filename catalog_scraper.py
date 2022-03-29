@@ -1,169 +1,251 @@
 from selenium import webdriver
+
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
+
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+from selenium.common.exceptions import TimeoutException
+
+from webdriver_manager.chrome import ChromeDriverManager
+
 from pprint import pprint
-import sys
 import time
-import os
 
-# path = '/usr/local/bin/chromedriver'
-# sys.path.append(path)
-URL = "https://gmu.bncollege.com/course-material/course-finder"
-# page = requests.get(URL)
+# --- functions ---
 
-options = webdriver.ChromeOptions()
-options.headless = True
-options.add_argument("--no-sandbox")
-# options.add_argument("--disable-extensions")
-
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-driver.maximize_window()
-departments = []
-courses = []
-sections = []
-
-
-def select_campus_info():
+def select_campus(driver, word="Tech"):
+    print('[select_campus] start')
+    
     try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located(
-                (By.XPATH, '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span'))
-        )
-        element.click()
-        # print('found campus button')
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@class="bned-campus-select"]//span[@class="selection"]/span'))
+        ).click()
+        
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, f'//li[contains(text(), "{word}")]'))
+        ).click()
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span[2]/span/span[2]/ul/li[3]'))
-        )
-        element.click()
-        # print('selected fairfax campus')
+        time.sleep(0.5)  # time for JavaScript to create `<select>`
 
-    except:
-        return 1
+    except Exception as ex:
+        print('[select_campus] Exception:', ex)
+        return False
 
-    return 0
+    return True
 
-def select_term(term):
+
+def select_term(driver, term):
+    print('[select_term] start')
+
     try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div'))
-        )
-        element.click()
-        # print('selected term drop down')
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div/span[2]/span/span[2]/ul/li[2]'))
-        )
-        element.click()
-        # print('selected spring 2022')
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "term")]//span[@class="selection"]/span'))
+        ).click()
 
-    except:
-        return 1
+        time.sleep(0.5)  # time for JavaScript to create `<select>`
+        
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, f'//div[contains(@class, "term")]//li[contains(text(), "{term}")]'))
+        ).click()
 
-    return 0
+        time.sleep(0.5)  # time for JavaScript to create `<select>`
 
-def select_department(department):
+    except Exception as ex:
+        print('[select_term] Exception:', ex)
+        return False
+
+    return True
+    
+    
+def get_all_departments(driver):
+    print('[get_all_departments] start')
+
+    departments = []   
+     
     try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div'))
-        )
-        element.click()
-        # print('selected department drop down')
+        #select [2]
+        all_options = driver.find_elements(By.XPATH, '((//div[@role="table"]//div[@role="row"])[2]//select)[2]//option')
+
+        for index, option in enumerate(all_options[1:], 1):
+            item = {"index": index, "department": option.text}
+            departments.append(item)
+        
+        time.sleep(1)  # time for JavaScript to create `<select>`
+
+    except Exception as ex:
+        print('[get_all_departments] Exception:', ex)
+        
+    return departments
+
+
+def select_department(driver, department):
+    print('[select_department] start')
+
+    try:
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, '(//div[@role="table"]//div[@role="row"])[2]//div[contains(@class, "department")]//span[@class="selection"]/span'))
+        ).click()
+
+        time.sleep(0.5)  # time for JavaScript to create `<select>`
 
         element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div/span[2]/span/span[1]/input'))
+            EC.presence_of_element_located((By.XPATH, '(//div[@role="table"]//div[@role="row"])[2]//div[contains(@class, "department")]//input'))
         )
         element.send_keys(department)
-        # print('typed department cs')
-
         element.send_keys(Keys.ENTER)
-        # print('selected department cs')
-    except:
-        return 1
+        
+        time.sleep(1)  # time for JavaScript to create `<select>`
+        
+    except Exception as ex:
+        print('[select_department] Exception:', ex)
+        return False
 
-    return 0
+    return True
 
-def select_course(course):
+
+def get_all_courses(driver):
+    print('[get_all_courses] start')
+
+    courses = []
+
     try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div'))
-        )
-        element.click()
-        # print('clicked on course drop down')
+        #select [3]
+        all_options = driver.find_elements(By.XPATH, '((//div[@role="table"]//div[@role="row"])[2]//select)[3]//option')
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/span[2]/span/span[1]/input'))
-        )
-        element.send_keys(course)
-        element.send_keys(Keys.ENTER)
-        # print('selected course 321')
+        for index, option in enumerate(all_options[1:], 1):
+            item = {"index": index, "section": option.text}
+            courses.append(item)
 
-    except:
-        return 1
+    except Exception as ex:
+        print('[get_all_courses] Exception:', ex)
 
-    return 0
+    return courses
 
-def fill_textbook_info(term, department, course, section):
-
-    while(select_department(department)):
-        print('selecting department')
-
-    while(select_course(course, department)):
-        print('selecting course')
-
-    # while(select_section(section)):
-    #     print('selecting section')
-
-    # while(retrieve_material()):
-    #     print('retrieving material')
-
-def clear_form():
+    
+def select_course(driver, course):
+    print('[select_course] start')
     
     try:
         element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[5]/div/a'))
+            EC.presence_of_element_located((By.XPATH, '(//div[@role="table"]//div[@role="row"])[2]//div[contains(@class, "course")]//span[@class="selection"]/span'))
         )
         element.click()
-    except:
-        return 1
-    return 0
 
+        element = WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH, '(//div[@role="table"]//div[@role="row"])[2]//div[contains(@class, "course")]//input'))
+        )
+        element.send_keys(course)
+        element.send_keys(Keys.ENTER)
+
+        time.sleep(1)  # time for JavaScript to create `<select>`
+        
+    except Exception as ex:
+        print('[select_course] Exception:', ex)
+        return False
+
+    return True
+
+
+def get_all_sections(driver):
+    print('[get_all_sections] start')
+
+    sections = []
+
+    try:
+        #select [4]
+        all_options = driver.find_elements(By.XPATH, '((//div[@role="table"]//div[@role="row"])[2]//select)[4]//option')
+
+
+        for index, option in enumerate(all_options[1:], 1):
+            #item = {"index": index, "course": option.text}
+            sections.append(option.text)
+
+    except Exception as ex:
+        print('[get_all_sections] Exception:', ex)
+
+    return sections
+
+
+def clear_form(driver):
+    print('[clear_form] start')
+   
+    try:
+        WebDriverWait(driver, 1).until(
+            EC.presence_of_element_located((By.XPATH,'//a[@class="js-clear-row"]'))
+        ).click()
+        
+        time.sleep(1)  # time for JavaScript to clear elements
+        
+    except Exception as ex:
+        print('[clear_form] Exception:', ex)
+        return False
+
+    return True
+    
+    
 def main():
+
+    URL = "https://gmu.bncollege.com/course-material/course-finder"
+
+    options = webdriver.ChromeOptions()
+    #options.headless = True
+    #options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    # options.add_argument("--disable-extensions")
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.maximize_window()
+
     start = time.time()
-    driver.get("https://gmu.bncollege.com/course-material/course-finder")
+    
+    driver.get(URL)
 
-    # while(select_campus_info()):
-    #     print('selecting campus')
+    select_campus(driver)
+    select_term(driver, "Spring")
 
-    # while(select_term("spring")):
-    #     print('selecting term')
-    # while(fill_departments()):
-    #     print("filling departments")
+    departments = get_all_departments(driver)
+        
+    print('departments:')
+    pprint(departments)        
 
-    # fill_textbook_info('spring', 'CS', 310, '002')
+    for dep in departments: #  3 to limit filling all courses for debugging purposes
 
-    # curUrl = driver.current_url
-    # print(curUrl)
+        while(select_department(driver, dep['department']) == False):
+            print("selecting department")
 
-    time.sleep(100)
+        dep['courses'] = get_all_courses(driver)
+
+        print('departments:')
+        pprint(departments[:4])        
+
+        for course in dep['courses']:
+            print(course['course'])
+            select_course(driver, course['course'])
+
+            course['sections'] = get_all_sections(driver)
+
+            print('departments:')
+            pprint(departments[:4])        
+
+        #clear_form(driver)   # DON'T use it
+
+    # --- display ---
+    
+    for dep in departments[:4]:
+        pprint(dep)
+
     end = time.time()
-    print(end - start)
+    print('time:', end - start)
 
+    input('Press ENTER to close')  # to keep open browser and check elements in DevTools
+    
     driver.close()
 
 if __name__ == "__main__":

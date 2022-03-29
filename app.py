@@ -23,17 +23,17 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)  
 otp = randint(000000,999999)
 
-@app.route('/')
-def get_books():
-	try:
-		books = list()
-		all_books = db.db.books_collection.find({}, {"_id": 0})
-		for book in all_books:
-			books.append(book)
-		return dumps(books, indent=4, sort_keys=True)
+# @app.route('/')
+# def get_books():
+# 	try:
+# 		books = list()
+# 		all_books = db.db.books_collection.find({}, {"_id": 0})
+# 		for book in all_books:
+# 			books.append(book)
+# 		return dumps(books, indent=4, sort_keys=True)
 
-	except Exception as e:
-		return dumps({"error": str(e)})
+# 	except Exception as e:
+# 		return dumps({"error": str(e)})
 
 # localhost:8000/book?course=<course>&number=<course-number>
 @app.route('/book/<department>/<course_num>', methods=['GET'])
@@ -76,8 +76,13 @@ def insert_book(dep, cnum, name, link, buy_price, rent_price):
 
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax
+# "http://localhost:8000/book/insert/seller/{dep}/{cnum}/{name}/{link}/{buy_price}/{rent_price}/{location}
 @app.route('/book/insert/seller/<dep>/<cnum>/<name>/<link>/<buy_price>/<rent_price>/<location>', methods=["POST"])
 def insert_seller(dep, cnum, name, link, buy_price, rent_price, location, methods=["POST"]):
+	# temporary solution to interrupted POST request due to # tag in string passed into request
+	name_arg = name.split("@")
+	name = name_arg[0] + "#" + name_arg[1]
+	
 	seller = Seller(name, link, float(buy_price), float(rent_price), location, False)
 	seller_dict = {
 			"name": seller.name, 
@@ -101,11 +106,11 @@ def insert_seller(dep, cnum, name, link, buy_price, rent_price, location, method
 def verify(email, dep, cnum):  
 	send_otp = f"{otp}-{dep}-{cnum}"
 	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
-	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/load_validation" 
+	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/" 
 	mail.send(msg)  
 	return "Success"
 
-@app.route('/load_validation', methods=["GET"])
+@app.route('/', methods=["GET"])
 def load_validation():
 	return render_template("email.html")
 

@@ -11,8 +11,9 @@ import asyncio
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
-def insert_seller(dep, cnum, name, link, buy_price, rent_price, location):
-	return requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{name}/{link}/{buy_price}/{rent_price}/{location}")
+def insert_seller(dep, cnum, link, buy_price, rent_price, location, name):
+	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{name}/{link}/{buy_price}/{rent_price}/{location}")
+	return response
 
 def verify_student(email, dep, cnum):
 	if ('@gmu.edu' in email):
@@ -75,7 +76,7 @@ async def on_message(message):
 			return msg.author == message.author and 'Y' in msg.content
 		# string = "/book/insert/seller/<dep>/<cnum>/<link>/<buy>/<rent>/<location>"
 		# | 2: dep | 3: cnum | 4: link | 5: buy | 6: rent | 7: location |
-		email = args[5]
+		# email = args[5]
 		
 		embed = discord.Embed(title=f"Is this your book (enter Y/N)?\n\n", description=f"\n{book['name']}\n", color=0xFFD700)
 		await message.channel.send(embed=embed)
@@ -88,7 +89,10 @@ async def on_message(message):
 		if (msg.content):
 			# parameter 3 will save the seller with their discord user handle so prospective 
 			# buyers can add them on discord to exchange textbooks.
-			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+			# print(f"Parameters:\nAuthor {message.author}\nLink: {args[4]} {args[5]} {args[6]} {args[7]}")
+			name = f"{message.author}"
+			regs = name.split('#')
+			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], regs[0] + "@" + regs[1])
 			verify_student(args[4], args[2], args[3])
 			await message.channel.send("OK!")
 		else:
