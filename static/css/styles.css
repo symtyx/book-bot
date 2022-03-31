@@ -1,0 +1,19 @@
+.button-submit {
+	color: #242936;
+	border: 1px solid #242936;
+}
+
+/*main-container {
+	z-index: 5;
+	opacity: 100%;
+}*/
+
+body {
+	background-color: #242930;
+	
+}
+
+.button-submit:hover {
+	background-color: #242936;
+	color: #ffffff;
+}
