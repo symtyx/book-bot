@@ -4,176 +4,209 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
+from book_scrapper import Book_Scrapper
 
-options = webdriver.ChromeOptions()
-options.headless = True
-driver = webdriver.Chrome("chromedriver.exe")
-# driver = webdriver.Chrome("chromedriver.exe", options=options)
+class Website_Scrapper:
+    def __init__(self):
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome("chromedriver.exe")
+        # driver = webdriver.Chrome("chromedriver.exe", options=options)
+        while (1):
+            start = time.time()
+            self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
 
-# TODO implement feature to select campus
-def select_campus_info():
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located(
-                (By.XPATH, '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span'))
-        )
-        element.click()
-        # print('found campus button')
+            book_array = []
+            self.fill_textbook_info('summer', 'cs', 367, '001')
+            book = Book_Scrapper(book_array, self.driver, 'cs', '367')
+            book_info = book.get_book_info()
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span[2]/span/span[2]/ul/li[3]'))
-        )
-        element.click()
-        # print('selected fairfax campus')
+            # time.sleep(1000)
+            end = time.time()
+            print(end - start)
 
-    except:
-        return 1
+    # TODO implement feature to select campus
+    def select_campus_info(self):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span'))
+            )
+            element.click()
+            # print('found campus button')
 
-    return 0
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[1]/span[2]/span/span[2]/ul/li[3]'))
+            )
+            element.click()
+            # print('selected fairfax campus')
 
-# TODO implement feature to select term
-def select_term(term):
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div'))
-        )
-        element.click()
-        # print('selected term drop down')
+        except:
+            return 1
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div/span[2]/span/span[2]/ul/li[2]'))
-        )
-        element.click()
-        # print('selected spring 2022')
+        return 0
 
-    except:
-        return 1
+    # TODO implement feature to select term
+    def select_term(self, term):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div'))
+            )
+            element.click()
+            # print('selected term drop down')
 
-    return 0
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[1]/div/div/span[2]/span/span[2]/ul/li[2]'))
+            )
+            element.click()
+            # print('selected spring 2022')
 
-def select_department(department):
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div'))
-        )
-        element.click()
-        # print('selected department drop down')
+        except:
+            return 1
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div/span[2]/span/span[1]/input'))
-        )
-        element.send_keys(department)
-        # print('typed department cs')
+        return 0
 
-        element.send_keys(Keys.ENTER)
-        # print('selected department cs')
+    def select_department(self, department):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div'))
+            )
+            element.click()
+            # print('selected department drop down')
 
-    except:
-        return 1
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[2]/div/div/span[2]/span/span[1]/input'))
+            )
+            element.send_keys(department)
+            # print('typed department cs')
 
-    return 0
+            element.send_keys(Keys.ENTER)
+            # print('selected department cs')
 
-def select_course(course):
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div'))
-        )
-        element.click()
-        # print('clicked on course drop down')
+        except:
+            return 1
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/span[2]/span/span[1]/input'))
-        )
-        element.send_keys(course)
-        # print('typed course 321')
+        return 0
 
-        element.send_keys(Keys.ENTER)
-        print('selected course 321')
+    def select_course(self, course):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div'))
+            )
+            element.click()
+            # print('clicked on course drop down')
 
-    except:
-        return 1
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/span[2]/span/span[1]/input'))
+            )
+            element.send_keys(course)
+            # print('typed course 321')
 
-    return 0
+            element.send_keys(Keys.ENTER)
+            # print('selected course 321')
 
-def select_section(section):
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[4]/div/div'))
-        )
-        element.click()
-        print('clicked on section drop down')
+        except:
+            return 1
 
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[4]/div/div/span[2]/span/span[1]/input'))
-        )
-        element.send_keys(section)
-        # print('typed section 002')
+        return 0
 
-        element.send_keys(Keys.ENTER)
-        # print('selected section 002')
+    def select_section(self, section):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[4]/div/div'))
+            )
+            element.click()
+            # print('clicked on section drop down')
 
-    except:
-        return 1
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[4]/div/div/span[2]/span/span[1]/input'))
+            )
+            element.send_keys(section)
+            # print('typed section 002')
 
-    return 0
+            element.send_keys(Keys.ENTER)
+            # print('selected section 002')
 
-def retrieve_material():
-    try:
-        element = WebDriverWait(driver, 1).until(
-            EC.presence_of_element_located((By.XPATH,
-                                            '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[3]/div[2]/a'))
-        )
-        element.click()
-        # print('clicked on retrieve materials')
+        except:
+            return 1
 
-    except:
-        return 1
+        return 0
 
-    return 0
+    def retrieve_material(self):
+        try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[3]/div[2]/a'))
+            )
+            element.click()
+            # print('clicked on retrieve materials')
 
-# I use while loops because selenium isn't consistent with getting elements on a page
-def fill_textbook_info(term, department, course, section):
-    while(select_campus_info()):
-        print('selecting campus')
+        except:
+            return 1
 
-    while(select_term(term)):
-        print('selecting term')
+        return 0
 
-    while(select_department(department)):
-        print('selecting department')
+    # I use while loops because selenium isn't consistent with getting elements on a page
+    def fill_textbook_info(self, term, department, course, section):
+        return_value = 1
+        while(return_value):
+            return_value = self.select_campus_info()
+            # print('select_campus_info')
 
-    while(select_course(course)):
-        print('selecting course')
+        return_value = 1
+        while(return_value):
+            return_value = self.select_term(term)
+            # print('select_term')
 
-    while(select_section(section)):
-        print('selecting section')
+        return_value = 1
+        while(return_value):
+            return_value = self.select_department(department)
+            # print('select_department')
 
-    while(retrieve_material()):
-        print('retrieving material')
+        return_value = 1
+        while(return_value):
+            return_value = self.select_course(course)
+            # print('select_course')
 
-def main():
-    start = time.time()
-    driver.get("https://gmu.bncollege.com/course-material/course-finder")
+        return_value = 1
+        while(return_value):
+            return_value = self.select_section(section)
+            # print('select_section')
 
-    fill_textbook_info('summer', 'cs', 310, '002')
+        return_value = 1
+        while(return_value):
+            return_value = self.retrieve_material()
+            # print('retrieve_material')
 
-    # curUrl = driver.current_url
-    # print(curUrl)
+    # def main():
+    #     while(1):
+    #         start = time.time()
+    #         driver.get("https://gmu.bncollege.com/course-material/course-finder")
+    #
+    #         book_array = []
+    #         fill_textbook_info('summer', 'cs', 367, '001')
+    #         book = Book_Scrapper(book_array, driver, 'cs', '367')
+    #         book_info = book.get_book_info()
+    #
+    #         # curUrl = driver.current_url
+    #         # print(curUrl)
+    #
+    #         # time.sleep(1000)
+    #         end = time.time()
+    #         print(end - start)
+    #
+    #         driver.close()
+    #         driver = webdriver.Chrome("chromedriver.exe")
 
-    # time.sleep(1000)
-    end = time.time()
-    print(end - start)
 
-    driver.close()
-
-if __name__ == "__main__":
-    main()
+    # if __name__ == "__main__":
+    #     main()
