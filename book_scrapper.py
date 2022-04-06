@@ -95,6 +95,46 @@ class Book_Scrapper:
 
         return children
 
+    # def get_book_link(self, book):
+    #     try:
+    #         # element = WebDriverWait(self.driver, 1).until(
+    #         #     EC.presence_of_element_located((By.XPATH,
+    #         #                                     '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span'))
+    #         # )
+    #         # element.click()
+    #
+    #         WebDriverWait(self.driver, 10).until(
+    #             EC.presence_of_element_located((By.XPATH,
+    #                                             '/html/body/main'))
+    #         )
+    #
+    #         link = book.find_elements_by_class_name('js-action-adoption-name')
+    #
+    #         print("1")
+    #         # time.sleep(2)
+    #         link[1].click()
+    #
+    #         WebDriverWait(self.driver, 10).until(
+    #             EC.presence_of_element_located((By.XPATH,
+    #                                             '/html/body/main'))
+    #         )
+    #
+    #         print("2")
+    #         # time.sleep(2)
+    #         url = self.driver.current_url
+    #
+    #         print("3")
+    #         # time.sleep(1)
+    #         self.driver.back()
+    #
+    #         print("4")
+    #
+    #     except:
+    #         print("it broke")
+    #         return 1
+    #
+    #     return url
+
     def get_book_link(self, book):
         try:
             # element = WebDriverWait(self.driver, 1).until(
@@ -106,15 +146,15 @@ class Book_Scrapper:
             link = book.find_elements_by_class_name('js-action-adoption-name')
 
             print("1")
-            time.sleep(1)
+            time.sleep(2)
             link[1].click()
 
             print("2")
-            time.sleep(1)
+            time.sleep(2)
             url = self.driver.current_url
 
             print("3")
-            time.sleep(1)
+            # time.sleep(1)
             self.driver.back()
 
             print("4")
