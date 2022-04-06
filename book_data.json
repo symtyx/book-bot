@@ -1,0 +1,102 @@
+[
+    {
+        "course": "203",
+        "department": "ACCT",
+        "name": "Financial and Managerial Accounting (Looseleaf) - With Code (Custom)",
+        "section": "001",
+        "sellers": [
+            {
+                "buy": true,
+                "buy_price": 28.57,
+                "digital": false,
+                "digital_price": 0.0,
+                "link": "https://gmu.bncollege.com/c/Financial-and-Managerial-Accounting-Looseleaf---With-Code-Custom/p/MBS_6898070_new?currentCampus=366&currentTerm=366_366_22_W&currentCourse=366_366_22_W_100_203_4",
+                "location": "Fairfax Campus",
+                "name": "GMU Bookstore",
+                "rent": false,
+                "rent_price": 0.0,
+                "verified": true
+            }
+        ]
+    },
+    {
+        "course": "203",
+        "department": "ACCT",
+        "name": "Financial and Managerial Accounting (Looseleaf) - With Code (Custom)",
+        "section": "002",
+        "sellers": [
+            {
+                "buy": true,
+                "buy_price": 28.57,
+                "digital": false,
+                "digital_price": 0.0,
+                "link": "https://gmu.bncollege.com/c/Financial-and-Managerial-Accounting-Looseleaf---With-Code-Custom/p/MBS_6898070_new?currentCampus=366&currentTerm=366_366_22_W&currentCourse=366_366_22_W_100_203_5",
+                "location": "Fairfax Campus",
+                "name": "GMU Bookstore",
+                "rent": false,
+                "rent_price": 0.0,
+                "verified": true
+            }
+        ]
+    },
+    {
+        "course": "203",
+        "department": "ACCT",
+        "name": "Accounting 203 Workbook (Custom)",
+        "section": "003",
+        "sellers": [
+            {
+                "buy": true,
+                "buy_price": 5.14,
+                "digital": false,
+                "digital_price": 0.0,
+                "link": "https://gmu.bncollege.com/c/Accounting-203-Workbook-Custom/p/MBS_6545555_new?currentCampus=366&currentTerm=366_366_22_W&currentCourse=366_366_22_W_100_203_6",
+                "location": "Fairfax Campus",
+                "name": "GMU Bookstore",
+                "rent": false,
+                "rent_price": 0.0,
+                "verified": true
+            }
+        ]
+    },
+    {
+        "course": "203",
+        "department": "ACCT",
+        "name": "Financial and Managerial Accounting (Looseleaf) - With Code (Custom)",
+        "section": "004",
+        "sellers": [
+            {
+                "buy": true,
+                "buy_price": 28.57,
+                "digital": false,
+                "digital_price": 0.0,
+                "link": "https://gmu.bncollege.com/c/Financial-and-Managerial-Accounting-Looseleaf---With-Code-Custom/p/MBS_6898070_new?currentCampus=366&currentTerm=366_366_22_W&currentCourse=366_366_22_W_100_203_7",
+                "location": "Fairfax Campus",
+                "name": "GMU Bookstore",
+                "rent": false,
+                "rent_price": 0.0,
+                "verified": true
+            }
+        ]
+    },
+    {
+        "course": "203",
+        "department": "ACCT",
+        "name": "Financial and Managerial Accounting (Looseleaf) - With Code (Custom)",
+        "section": "005",
+        "sellers": [
+            {
+                "buy": true,
+                "buy_price": 28.57,
+                "digital": false,
+                "digital_price": 0.0,
+                "link": "https://gmu.bncollege.com/c/Financial-and-Managerial-Accounting-Looseleaf---With-Code-Custom/p/MBS_6898070_new?currentCampus=366&currentTerm=366_366_22_W&currentCourse=366_366_22_W_100_203_8",
+                "location": "Fairfax Campus",
+                "name": "GMU Bookstore",
+                "rent": false,
+                "rent_price": 0.0,
+                "verified": true
+            }
+        ]
+    }
+]

@@ -6,11 +6,12 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 class Book_Scrapper:
-    def __init__(self, book_array, driver, department, course):
+    def __init__(self, book_array, driver, department, course, section):
         self.driver = driver
         self.book_dict = {}
         self.department = department
         self.course = course
+        self.section = section
         self.book_array = book_array
 
     def compile_book(self):
@@ -26,7 +27,6 @@ class Book_Scrapper:
         # time.sleep(2)
         # book1 = return_value[0].text
         # book2 = return_value[1].text
-
         books = return_value
 
         for book in books:
@@ -34,41 +34,44 @@ class Book_Scrapper:
                 time.sleep(1)
             book_text.append(book.text)
 
-        for index in range(len(books)):
-            return_value = 1
-            print('get book')
-            while (return_value == 1):
-                return_value = self.get_books()
-            book = return_value[index]
+        # for index in range(len(books)):
+        index = 0
+        return_value = 1
+        print('get book from books')
 
-            text = book_text[index]
-            book_info = {}
-            seller_info = {}
-            return_value = 1
+        while (return_value == 1):
+            return_value = self.get_books()
+        book = return_value[index]
 
-            print('book link')
-            while (return_value == 1):
-                return_value = self.get_book_link(book)
-                time.sleep(1)
-                # wait_value = self.wait_for_page_to_load()
-                # while(wait_value):
-                #     wait_value = self.wait_for_page_to_load()
+        text = book_text[index]
+        book_info = {}
+        seller_info = {}
+        return_value = 1
 
-            seller_info['link'] = return_value
-            seller_info['name'] = 'GMU Bookstore'
-            seller_info['location'] = 'Fairfax Campus'
-            seller_info['verified'] = True
+            # print('book link')
+        while (return_value == 1):
+            return_value = self.get_book_link(book)
+            time.sleep(1)
+            wait_value = self.wait_for_page_to_load()
+            while(wait_value):
+                wait_value = self.wait_for_page_to_load()
 
-            book_info['department'] = self.department
-            book_info['course'] = self.course
-            book_info['sellers'] = []
+        seller_info['link'] = return_value
+        seller_info['name'] = 'GMU Bookstore'
+        seller_info['location'] = 'Fairfax Campus'
+        seller_info['verified'] = True
 
-            print("get book price")
-            book_info, seller_info = self.get_book_price(book_info, seller_info, text)
+        book_info['department'] = self.department
+        book_info['course'] = self.course
+        book_info['section'] = self.section
+        book_info['sellers'] = []
 
-            book_info['sellers'].append(seller_info)
+        print("get book price")
+        book_info, seller_info = self.get_book_price(book_info, seller_info, text)
 
-            self.book_array.append(book_info)
+        book_info['sellers'].append(seller_info)
+
+        self.book_array.append(book_info)
 
         print(self.book_array)
 
@@ -84,12 +87,13 @@ class Book_Scrapper:
 
     def get_books(self):
         try:
+            # FIXME: Fix it so that courses that don't have any materials
+            # doesn't hang and returns null or something
             element = WebDriverWait(self.driver, 1).until(
                 EC.presence_of_element_located((By.CLASS_NAME,
                                                 'bned-cm-item-main-container'))
             )
-            children = self.driver.find_elements(By.CLASS_NAME, 'bned-cm-item-main-container')
-
+            children = self.driver.find_elements(by=By.CLASS_NAME, value='bned-cm-item-main-container')
         except:
             return 1
 
@@ -137,33 +141,19 @@ class Book_Scrapper:
 
     def get_book_link(self, book):
         try:
-            # element = WebDriverWait(self.driver, 1).until(
-            #     EC.presence_of_element_located((By.XPATH,
-            #                                     '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span'))
-            # )
-            # element.click()
-
-            link = book.find_elements_by_class_name('js-action-adoption-name')
-
-            print("1")
-            time.sleep(2)
-            link[1].click()
-
-            print("2")
-            time.sleep(2)
-            url = self.driver.current_url
-
-            print("3")
-            # time.sleep(1)
-            self.driver.back()
-
-            print("4")
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span'))
+            )
+            element.click()
+            # Click on book and then get the current_url
+            strUrl = self.driver.current_url
 
         except:
             print("it broke")
             return 1
 
-        return url
+        return strUrl
 
     def get_book_text_element(self):
         print('text element')
@@ -194,6 +184,7 @@ class Book_Scrapper:
         index = str.find('Print\n$')
         if (index != -1):
             seller['buy'] = True
+            # seller['buy_price'] = float(str[index + 8:str.find("Print") - 1:])
             seller['buy_price'] = float(str[index + 8:str.find("New Print") - 1:])
         else:
             seller['buy'] = False

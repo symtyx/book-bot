@@ -5,23 +5,52 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 from book_scrapper import Book_Scrapper
+from webdriver_manager.chrome import ChromeDriverManager
+import json
 
 class Website_Scrapper:
     def __init__(self):
         options = webdriver.ChromeOptions()
         options.headless = True
-        self.driver = webdriver.Chrome("chromedriver.exe")
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        # self.driver = webdriver.Chrome("chromedriver.exe")
         # driver = webdriver.Chrome("chromedriver.exe", options=options)
+        book_array = []
+        file = open('catalog_data.json')
+        data = json.load(file)
+
         while (1):
+
+            
             start = time.time()
-            self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+            for i in data:
+                # i['name'] for department name
+                # print(i['name'])
+                for j in i['courses']:
+                    # j['name'] to get each course number
+                    # print("\n=&= Course Number =&=")
+                    # print(j['name'])
+                    # print("=&= Section Numbers =&=")
+                    for z in j['sections']:
+                        if (z['name'] == "3D1"):
+                            break
+                        self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+                        # z['name'] to get each section number of course
+                        # print(z['name'])
+                        self.fill_textbook_info('spring', i['name'], j['name'], z['name'])
+                        book = Book_Scrapper(book_array, self.driver, i['name'], j['name'], z['name'])
+                        book_info = book.get_book_info()
+                    break  
+                break
 
-            book_array = []
-            self.fill_textbook_info('summer', 'cs', 367, '001')
-            book = Book_Scrapper(book_array, self.driver, 'cs', '367')
-            book_info = book.get_book_info()
-
+            # self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+            # self.fill_textbook_info('spring', 'acct', '203', '3D1')
+            # book = Book_Scrapper(book_array, self.driver, 'acct', '203', '3D1')
+            # book_info = book.get_book_info()
+            with open('book_data.json', 'w') as outfile:
+                json.dump(book_array, outfile, indent=4, sort_keys=True)
             # time.sleep(1000)
+            file.close()
             end = time.time()
             print(end - start)
 
