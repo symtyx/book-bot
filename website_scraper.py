@@ -12,9 +12,10 @@ class Website_Scrapper:
     def __init__(self):
         options = webdriver.ChromeOptions()
         options.headless = True
-        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        # self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         # self.driver = webdriver.Chrome("chromedriver.exe")
-        # driver = webdriver.Chrome("chromedriver.exe", options=options)
+        # self.driver = webdriver.Chrome("chromedriver.exe", options=options)
+        self.driver = webdriver.Edge('msedgedriver.exe')
         book_array = []
         file = open('catalog_data.json')
         data = json.load(file)
@@ -35,7 +36,9 @@ class Website_Scrapper:
                         # z['name'] to get each section number of course
                         # print(z['name'])
                         self.fill_textbook_info('spring', i['name'], j['name'], z['name'])
+                        # self.fill_textbook_info('spring', 'cs', 367, '001')
                         book = Book_Scrapper(book_array, self.driver, i['name'], j['name'], z['name'])
+                        # book = Book_Scrapper(book_array, self.driver, 'cs', 367, '001')
                         book_info = book.get_book_info()
                     break  
                 break
