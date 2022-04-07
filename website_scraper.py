@@ -6,53 +6,40 @@ from selenium.webdriver.common.keys import Keys
 import time
 from book_scrapper import Book_Scrapper
 from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
 import json
+from csv import reader
 
 class Website_Scrapper:
     def __init__(self):
         options = webdriver.ChromeOptions()
         options.headless = True
-        # self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         # self.driver = webdriver.Chrome("chromedriver.exe")
         # self.driver = webdriver.Chrome("chromedriver.exe", options=options)
-        self.driver = webdriver.Edge('msedgedriver.exe')
+        # self.driver = webdriver.Edge('msedgedriver.exe')
         book_array = []
-        file = open('catalog_data.json')
-        data = json.load(file)
 
+        with open("json.csv", "r") as read_obj:
+            csv_reader = reader(read_obj)
 
-        while (1):
-
-            start = time.time()
-            for i in data:
-                # i['name'] for department name
-                # print(i['name'])
-                for j in i['courses']:
-                    # j['name'] to get each course number
-                    for z in j['sections']:
-                        if (z['name'] == "3D1"):
-                            break
-                        self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
-                        # z['name'] to get each section number of course
-                        # print(z['name'])
-                        self.fill_textbook_info('spring', i['name'], j['name'], z['name'])
-                        # self.fill_textbook_info('spring', 'cs', 367, '001')
-                        book = Book_Scrapper(book_array, self.driver, i['name'], j['name'], z['name'])
-                        # book = Book_Scrapper(book_array, self.driver, 'cs', 367, '001')
-                        book_info = book.get_book_info()
-                    break  
+            for row in csv_reader:
+                args = row[0].split(" ")
+                # args[0] = Department | args[1] = Course Number | args[2] = Section
+                self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+                self.fill_textbook_info('spring', args[0], args[1], args[2])
+                
+                book = Book_Scrapper(book_array, self.driver, args[0], args[1], args[2])
+                book_info = book.get_book_info()
                 break
 
-            # self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
-            # self.fill_textbook_info('spring', 'acct', '203', '3D1')
-            # book = Book_Scrapper(book_array, self.driver, 'acct', '203', '3D1')
-            # book_info = book.get_book_info()
-            with open('book_data.json', 'w') as outfile:
-                json.dump(book_array, outfile, indent=4, sort_keys=True)
-            # time.sleep(1000)
-            file.close()
-            end = time.time()
-            print(end - start)
+            read_obj.close()
+
+        with open('book_data.json', 'w') as outfile:
+            json.dump(book_array, outfile, indent=4, sort_keys=True)
+        
+        end = time.time()
+        print(end - start)
 
     # TODO implement feature to select campus
     def select_campus_info(self):
