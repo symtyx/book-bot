@@ -19,6 +19,7 @@ class Website_Scrapper:
         file = open('catalog_data.json')
         data = json.load(file)
 
+
         while (1):
 
             start = time.time()
