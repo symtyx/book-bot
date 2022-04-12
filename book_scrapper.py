@@ -13,13 +13,7 @@ class Book_Scrapper:
         self.course = course
         self.section = section
         self.book_array = book_array
-        # self.book_element_array = ['//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span',
-        #                           '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[2]/div[2]/div[2]/div[1]/div/h3/a/span',
-        #                           '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[3]/div[2]/div[2]/div[1]/div/h3/a/span',
-        #                           '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[4]/div[2]/div[2]/div[1]/div/h3/a/span',
-        #                           '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[5]/div[2]/div[2]/div[1]/div/h3/a/span']
-        #//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[4]/div[2]/div[2]/div[1]/div[1]/h3/a/span
-
+        
     def compile_book(self):
         self.get_book_info()
 
@@ -44,57 +38,43 @@ class Book_Scrapper:
         books = return_value
 
         for book in books:
+            print(book.text)
             while(book.text == ''):
                 time.sleep(1)
+
             book_text.append(book.text)
 
-        for index in range(len(books)):
-            print('get book from books')
-            return_value = 1
-
-            book_info = {}
-
-            book_info['department'] = self.department
-            book_info['course'] = self.course
-            book_info['section'] = self.section
-            book_info['sellers'] = []
+        print(book_text)
+        # for index in range(len(books)):
+        index = 0
+        print('get book from books')
+        return_value = 1
 
 
-            text = book_text[index]
+        text = book_text[index]
 
-            return_value = 1
-
-            # while(return_value):
-            #     return_value = self.click_book(index)
-            #
-            # return_value = 1
-
-            # while(1):
-            #     books[index].click()
-            #     print('click')
-
-
-            while (return_value == 1):
-                return_value = self.get_book_link(index)
-                time.sleep(1)
+        return_value = 1
+        while (return_value == 1):
+            return_value = self.get_book_link(index)
+            time.sleep(1)
                 # wait_value = self.wait_for_page_to_load()
                 # while(wait_value):
                 #     wait_value = self.wait_for_page_to_load()
 
-            seller_info = {}
-            seller_info['name'] = 'GMU Bookstore'
-            seller_info['location'] = 'Fairfax Campus'
-            seller_info['verified'] = True
-            seller_info['link'] = return_value
+        seller_info = {}
+        seller_info['name'] = 'GMU Bookstore'
+        seller_info['location'] = 'Fairfax Campus'
+        seller_info['verified'] = True
+        seller_info['link'] = return_value
 
-            print("get book price")
-            book_info, seller_info = self.get_book_price(book_info, seller_info, text)
+        print("get book price")
+        book_info, seller_info = self.get_book_price(book_info, seller_info, text)
 
-            book_info['sellers'].append(seller_info)
+        book_info['sellers'].append(seller_info)
 
-            self.book_array.append(book_info)
+        self.book_array.append(book_info)
 
-            print(book_info)
+        print(book_info)
 
     def click_book(self,index):
         try:
@@ -162,24 +142,24 @@ class Book_Scrapper:
 
     def get_book_link(self, index):
         try:
+            element = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span'))
+            )
+            element.click()
+            # time.sleep(3)
+            # book_element = '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[{}]/div[2]/div[2]/div[1]/div/h3/a/span'.format(index + 1)
+
             # element = WebDriverWait(self.driver, 1).until(
-            #     EC.presence_of_element_located((By.XPATH,
-            #                                     '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div/div[1]/div[2]/div[2]/div[1]/div/h3/a/span'))
+            #     EC.presence_of_element_located((By.XPATH, book_element))
             # )
             # element.click()
             # time.sleep(3)
-            book_element = '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[{}]/div[2]/div[2]/div[1]/div/h3/a/span'.format(index + 1)
-
-            element = WebDriverWait(self.driver, 1).until(
-                EC.presence_of_element_located((By.XPATH, book_element))
-            )
-            element.click()
-            time.sleep(3)
             # Click on book and then get the current_url
             strUrl = self.driver.current_url
-            time.sleep(3)
-            self.driver.back()
-            time.sleep(3)
+            # time.sleep(3)
+            # self.driver.back()
+            # time.sleep(3)
 
         except:
             print("it broke")

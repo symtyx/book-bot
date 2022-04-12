@@ -9,6 +9,7 @@ import time
 import os
 import db
 from book import Book, Seller
+import json 
 
 app = Flask(__name__)
 
@@ -44,33 +45,35 @@ def book(department, course_num):
 	return dumps(None)
 
 
-@app.route('/book/insert/<dep>/<cnum>/<name>/<link>/<buy_price>/<rent_price>', methods=["POST"])
-def insert_book(dep, cnum, name, link, buy_price, rent_price):
+@app.route('/book/insert', methods=["POST"])
+def insert_book():
+	dat = loads(request.data)
+	print(dat)
 	# Initialize book with the GMU bookstore seller information
-	seller = Seller("GMU Bookstore", link, float(buy_price), float(rent_price), "Fairfax Campus", True)
+	# seller = Seller("GMU Bookstore", link, float(buy_price), float(rent_price), "Fairfax Campus", True)
 	
-	# Initialize seller and book data with request params and seller data
-	bookstore_dict = {"name": seller.name, "link": seller.link, 
-					"buy": seller.buy,
-					"buy_price": seller.buy_price, 
-					"rent": seller.rent, 
-					"rent_price": seller.rent_price, 
-					"location": seller.location,
-					"verified": seller.verified
-				}
-	book = Book(name, dep, cnum, bookstore_dict)
+	# # Initialize seller and book data with request params and seller data
+	# bookstore_dict = {"name": seller.name, "link": seller.link, 
+	# 				"buy": seller.buy,
+	# 				"buy_price": seller.buy_price, 
+	# 				"rent": seller.rent, 
+	# 				"rent_price": seller.rent_price, 
+	# 				"location": seller.location,
+	# 				"verified": seller.verified
+	# 			}
+	# book = Book(name, dep, cnum, bookstore_dict)
 
-	# create dict struct to insert proper format into Mongo collection
-	book_dict = {
-		"name": book.name, 
-		"department": book.department,
-		"course": book.course_name, 
-		"sellers": book.sellers
-		}
+	# # create dict struct to insert proper format into Mongo collection
+	# book_dict = {
+	# 	"name": book.name, 
+	# 	"department": book.department,
+	# 	"course": book.course_name, 
+	# 	"sellers": book.sellers
+	# 	}
 
 	# Insert book into Database
-	db.db.books_collection.insert_one(book_dict)
-	return f"Book name: {book.name} | Department: {book.department} | Course: {book.course_name}"
+	db.db.books_collection.insert_one(dat)
+	return "Success!"
 
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax

@@ -9,31 +9,41 @@ from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import json
 from csv import reader
+import requests
 
 class Website_Scrapper:
     def __init__(self):
         options = webdriver.ChromeOptions()
-        options.headless = True
+        # options.headless = True
         self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         # self.driver = webdriver.Chrome("chromedriver.exe")
         # self.driver = webdriver.Chrome("chromedriver.exe", options=options)
         # self.driver = webdriver.Edge('msedgedriver.exe')
         book_array = []
+        start = time.time()
 
         with open("json.csv", "r") as read_obj:
             csv_reader = reader(read_obj)
 
             for row in csv_reader:
-                args = row[0].split(" ")
-                # args[0] = Department | args[1] = Course Number | args[2] = Section
                 self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+                args = row[0].split(" ")
+                if (args[2] == "3D1"):
+                    break
+                
+                # ACCT 203 3D1 (Hangs)
+                # args[0] = Department | args[1] = Course Number | args[2] = Section
                 self.fill_textbook_info('spring', args[0], args[1], args[2])
                 
                 book = Book_Scrapper(book_array, self.driver, args[0], args[1], args[2])
                 book_info = book.get_book_info()
-                break
-
+                
+                # requests.post("http://localhost:8000/book/insert", data=json.dumps(book_array[0], indent=4))
             read_obj.close()
+
+
+        # read_obj.close()
+        print(book_array)
 
         with open('book_data.json', 'w') as outfile:
             json.dump(book_array, outfile, indent=4, sort_keys=True)
