@@ -6,56 +6,65 @@ from selenium.webdriver.common.keys import Keys
 import time
 from book_scrapper import Book_Scrapper
 from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
 import json
+from csv import reader
+import requests
+
 
 class Website_Scrapper:
     def __init__(self):
         options = webdriver.ChromeOptions()
-        options.headless = True
+        # options.headless = True
         # self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
-        # self.driver = webdriver.Chrome("chromedriver.exe")
+        self.driver = webdriver.Chrome("chromedriver.exe")
+        self.start = 0
+        self.entire_start = time.time()
         # self.driver = webdriver.Chrome("chromedriver.exe", options=options)
-        self.driver = webdriver.Edge('msedgedriver.exe')
+        # self.driver = webdriver.Edge('msedgedriver.exe')
         book_array = []
-        file = open('catalog_data.json')
-        data = json.load(file)
 
-        while (1):
 
-            
-            start = time.time()
-            for i in data:
-                # i['name'] for department name
-                # print(i['name'])
-                for j in i['courses']:
-                    # j['name'] to get each course number
-                    # print("\n=&= Course Number =&=")
-                    # print(j['name'])
-                    # print("=&= Section Numbers =&=")
-                    for z in j['sections']:
-                        if (z['name'] == "3D1"):
-                            break
-                        self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
-                        # z['name'] to get each section number of course
-                        # print(z['name'])
-                        self.fill_textbook_info('spring', i['name'], j['name'], z['name'])
-                        # self.fill_textbook_info('spring', 'cs', 367, '001')
-                        book = Book_Scrapper(book_array, self.driver, i['name'], j['name'], z['name'])
-                        # book = Book_Scrapper(book_array, self.driver, 'cs', 367, '001')
+        with open("json.csv", "r") as read_obj:
+            csv_reader = reader(read_obj)
+            # temp = 1
+
+            for row in csv_reader:
+                succeed = 1
+                args = row[0].split(" ")
+
+                while(succeed):
+                    # if (args[0] == 'AIT' and args[1] == '726'):
+                    #     temp = 1
+
+                    # if (temp):
+                    self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
+                    self.start = time.time()
+                    # args[0] = Department | args[1] = Course Number | args[2] = Section
+                    try:
+                        self.fill_textbook_info('spring', args[0], args[1], args[2])
+                        book = Book_Scrapper(book_array, self.driver, args[0], args[1], args[2])
                         book_info = book.get_book_info()
-                    break  
-                break
+                    except:
+                        print('refreshed page, browser was stuck')
 
-            # self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
-            # self.fill_textbook_info('spring', 'acct', '203', '3D1')
-            # book = Book_Scrapper(book_array, self.driver, 'acct', '203', '3D1')
-            # book_info = book.get_book_info()
-            with open('book_data.json', 'w') as outfile:
-                json.dump(book_array, outfile, indent=4, sort_keys=True)
-            # time.sleep(1000)
-            file.close()
-            end = time.time()
-            print(end - start)
+                    succeed = 0
+
+                json_object = json.dumps(book_array, indent=4)
+                print(json_object)
+
+                # requests.post("http://localhost:8000/book/insert", data=json.dumps(book_array[0], indent=4))
+            read_obj.close()
+
+        # read_obj.close()
+        # print(book_array)
+
+        with open('book_data.json', 'w') as outfile:
+            json.dump(book_array, outfile, indent=4, sort_keys=True)
+
+        end = time.time()
+        print("Whole Runtime")
+        print(end - self.entire_start)
 
     # TODO implement feature to select campus
     def select_campus_info(self):
@@ -149,6 +158,8 @@ class Website_Scrapper:
 
         return 0
 
+
+
     def select_section(self, section):
         try:
             element = WebDriverWait(self.driver, 1).until(
@@ -187,36 +198,46 @@ class Website_Scrapper:
 
         return 0
 
+    def check_runtime(self):
+        if (time.time() - self.start > 10):
+            raise Exception
+
     # I use while loops because selenium isn't consistent with getting elements on a page
     def fill_textbook_info(self, term, department, course, section):
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.select_campus_info()
+            self.check_runtime()
             # print('select_campus_info')
 
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.select_term(term)
+            self.check_runtime()
             # print('select_term')
 
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.select_department(department)
+            self.check_runtime()
             # print('select_department')
 
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.select_course(course)
+            self.check_runtime()
             # print('select_course')
 
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.select_section(section)
+            self.check_runtime()
             # print('select_section')
 
         return_value = 1
-        while(return_value):
+        while (return_value):
             return_value = self.retrieve_material()
+            self.check_runtime()
             # print('retrieve_material')
 
     # def main():
@@ -238,7 +259,6 @@ class Website_Scrapper:
     #
     #         driver.close()
     #         driver = webdriver.Chrome("chromedriver.exe")
-
 
     # if __name__ == "__main__":
     #     main()
