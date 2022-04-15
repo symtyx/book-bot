@@ -18,7 +18,7 @@ class Book_Scrapper:
         self.get_book_info()
 
     def get_book_info(self):
-        print('get book')
+        # print('get book')
         return_value = 1
         book_text = []
         book_info = {}
@@ -49,7 +49,7 @@ class Book_Scrapper:
 
         # loops through each book
         for index in range(len(books)):
-            print('get book from books')
+            # print('get book from books')
 
             book_info = {}
             book_info['department'] = self.department
@@ -78,7 +78,7 @@ class Book_Scrapper:
             # seller_info['link'] = return_value
 
             # gets prices and buy options from the text of the book element
-            print("get book price")
+            # print("get book price")
             book_info, seller_info = self.get_book_price(book_info, seller_info, text)
 
             # add seller to book dictionary
@@ -87,11 +87,7 @@ class Book_Scrapper:
             # add book to book array
             self.book_array.append(book_info)
 
-            print(book_info)
-
-        # print('successful')
-        print(self.book_array)
-        return 0
+        return book_info
 
     # def click_book(self,index):
     #     try:
@@ -145,7 +141,7 @@ class Book_Scrapper:
     #     return 0
 
     def get_books(self):
-        print("get books")
+        # print("get books")
         try:
             # FIXME: Fix it so that courses that don't have any materials
             # doesn't hang and returns null or something
@@ -213,8 +209,12 @@ class Book_Scrapper:
         if (index != -1):
             seller['buy'] = True
             # seller['buy_price'] = float(str[index + 8:str.find("Print") - 1:])
-            if(str.find('Used Print') != -1):
-                seller['buy_price'] = float(str[index + 7:str.find(' Used Print'):])
+            buy_index = str.find('Used Print')
+            if(buy_index != -1):
+                buy_str = str[buy_index - 9::]
+                dollar_index = buy_str.find('$')
+                buy_index = buy_str.find(' Used Print')
+                seller['buy_price'] = float(buy_str[dollar_index + 1:buy_index:])
             else:
                 seller['buy_price'] = float(str[index + 7:str.find(' New Print'):])
         else:
@@ -227,10 +227,17 @@ class Book_Scrapper:
             # temp_str = str[index + 7]
             # dollar_index = temp_str.find('$')
             seller['rent'] = True
-            if(str.find('Used Print Rental') != -1):
-                seller['rent_price'] = float(str[index + 8:str.find(' Used Print Rental'):])
+            rent_index = str.find('Used Print Rental')
+            if(rent_index != -1):
+                rent_str = str[rent_index - 9::]
+                dollar_index = rent_str.find('$')
+                rent_index = rent_str.find(' Used Print Rental')
+                seller['rent_price'] = float(rent_str[dollar_index + 1:rent_index:])
             elif(str.find('Rent Only') != -1):
-                seller['rent_price'] = float(str[index + 8:str.find(' Rent Only'):])
+                rent_str = str[str.find('Rent Only') - 9::]
+                dollar_index = rent_str.find('$')
+                rent_index = rent_str.find(' Rent Only')
+                seller['rent_price'] = float(rent_str[dollar_index + 1:rent_index:])
             else:
                 seller['rent_price'] = float(str[index + 8:str.find(' New Print Rental') :])
         else:
@@ -253,7 +260,7 @@ class Book_Scrapper:
 
             else:
                 temp = str[index:str.find('Digital Purchase') - 1:]
-                seller['digital_price'] = float(str[index:str.find('Digital Purchase') - 1:])
+                seller['digital_price'] = float(str[index + 9:str.find(' Digital Purchase'):])
         else:
             seller['digital'] = False
             seller['digital_price'] = 0.0
