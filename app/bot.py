@@ -8,19 +8,19 @@ import asyncio
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
-def insert_seller(dep, cnum, link, buy_price, rent_price, location, name):
-	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{name}/{link}/{buy_price}/{rent_price}/{location}")
+def insert_seller(dep, cnum, section, link, buy_price, rent_price, location, name):
+	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{section}/{name}/{link}/{buy_price}/{rent_price}/{location}")
 	return response
 
-def verify_student(email, dep, cnum):
+def verify_student(email, dep, cnum, section):
 	if ('@gmu.edu' in email):
-		response = requests.post(f"http://localhost:8000/verify/{email}/{dep}/{cnum}")
+		response = requests.post(f"http://localhost:8000/verify/{email}/{dep}/{cnum}/{section}")
 		return response
 
 	return "Please enter a valid email"
 
-def get_book(department, course_num):
-	response = requests.get(f"http://localhost:8000/book/{department}/{course_num}")
+def get_book(department, cnum, section):
+	response = requests.get(f"http://localhost:8000/book/{department}/{cnum}/{section}")
 	if (response == None):
 		return None
 
@@ -41,21 +41,25 @@ async def on_message(message):
 
 	if (message.content.startswith('!bot check')):
 		args = message.content.split()
-		book = get_book(args[2], args[3])
+		book = get_book(args[2], args[3], args[4])
 
 		embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\n{book['name']}\n", color=0xFFD700)
 		for i in book['sellers']:
-			# hyperlink the bookstore link because it's long
-
+			
+			prices = ""
 			if i['buy']:
 				options = "buy"
+				prices += str(i['buy_price'])
+				prices += " "
 			if i['rent']:
 				options += "/rent"
+				prices += str(i['rent_price'])
 
 			if i['name'] == "GMU Bookstore":
-				embed.add_field(name=f"{i['name']}", value=f"[Bookstore link]({i['link']})\nOptions: {options}\nLocation: {i['location']}",inline=False)
+				# hyperlink the bookstore link because it's long
+				embed.add_field(name=f"{i['name']}", value=f"[Bookstore link]({i['link']})\nOptions: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
 			else:
-				embed.add_field(name=f"{i['name']} ({i['link']})", value=f"Options: {options}\nLocation: {i['location']}",inline=False)
+				embed.add_field(name=f"{i['name']} ({i['link']})", value=f"Options: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
 
 		
 		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
@@ -64,7 +68,7 @@ async def on_message(message):
 
 	if (message.content.startswith('!bot add')):
 		args = message.content.split()
-		book = get_book(args[2], args[3])
+		book = get_book(args[2], args[3], args[4])
 		if (book == None):
 			await message.channel.send("Course requirements not found.")
 			return
@@ -83,12 +87,15 @@ async def on_message(message):
 		if (msg.content):
 			# parameter 3 will save the seller with their discord user handle so prospective 
 			# buyers can add them on discord to exchange textbooks.
-			# print(f"Parameters:\nAuthor {message.author}\nLink: {args[4]} {args[5]} {args[6]} {args[7]}")
 			name = f"{message.author}"
 			regs = name.split('#')
-			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], regs[0] + "@" + regs[1])
-			verify_student(args[4], args[2], args[3])
-			await message.channel.send("OK!")
+
+			# department | course number | section | email | buy price | rent price | location | display name
+			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], args[8], regs[0] + "@" + regs[1])
+
+			# email | department | course number | section
+			verify_student(args[5], args[2], args[3], args[4])
+			await message.channel.send("Great, please check your email for verification!")
 		else:
 			await message.channel.send("Sorry you can't add that.")
 

@@ -71,6 +71,7 @@ class Book_Scrapper:
                 # while(wait_value):
                 #     wait_value = self.wait_for_page_to_load()
 
+<<<<<<< Updated upstream
             seller_info = {}
             seller_info['name'] = 'GMU Bookstore'
             seller_info['location'] = 'Fairfax Campus'
@@ -101,6 +102,34 @@ class Book_Scrapper:
     #         print("couldn't click")
     #         return 1
     #     return 0
+=======
+        seller_info = {}
+        seller_info['name'] = 'GMU Bookstore'
+        seller_info['location'] = 'Fairfax Campus'
+        seller_info['verified'] = True
+        seller_info['link'] = return_value
+
+        print("get book price")
+        book_info, seller_info = self.get_book_price(book_info, seller_info, text)
+
+        book_info['sellers'].append(seller_info)
+
+        self.book_array.append(book_info)
+        print(book_info)
+
+    def click_book(self,index):
+        try:
+            return_value = 1
+            while (return_value == 1):
+                return_value = self.get_book_element(index)
+
+            # book = return_value[index]
+            # book.click()
+        except:
+            print("couldn't click")
+            return 1
+        return 0
+>>>>>>> Stashed changes
 
     def check_book(self):
         try:
