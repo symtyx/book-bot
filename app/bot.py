@@ -43,6 +43,11 @@ async def on_message(message):
 		args = message.content.split()
 		book = get_book(args[2], args[3], args[4])
 
+		if (book['name'] == ""):
+			embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\nThere are no course requirements for this course section\n", color=0xFFD700)
+			await message.channel.send(embed=embed)
+			return
+		
 		embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\n{book['name']}\n", color=0xFFD700)
 		for i in book['sellers']:
 			
