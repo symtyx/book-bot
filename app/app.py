@@ -33,6 +33,15 @@ def book(department, course_num, section):
 	return dumps(None)
 
 
+@app.route("/book/insert-many", methods=["POST"])
+def insert_books():
+	with open('../book_data.json') as file:
+		file_data = json.load(file)
+	# db.db.books_collection.insert_many(file_data)
+
+	db.db.books_collection.insert_many(file_data)
+	return "Success!"
+
 # Insert book into the database from Selenium bot
 @app.route('/book/insert', methods=["POST"])
 def insert_book():

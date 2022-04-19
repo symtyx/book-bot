@@ -28,7 +28,7 @@ class Website_Scrapper:
             for row in csv_reader:
                 self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
                 args = row[0].split(" ")
-                if (args[2] == "3D1"):
+                if (args[1] == "303"):
                     break
                 
                 # ACCT 203 3D1 (Hangs)
@@ -47,7 +47,7 @@ class Website_Scrapper:
 
         with open('book_data.json', 'w') as outfile:
             json.dump(book_array, outfile, indent=4, sort_keys=True)
-        
+
         end = time.time()
         print(end - start)
 
