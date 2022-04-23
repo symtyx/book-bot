@@ -6,6 +6,8 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 class Book_Scrapper:
+    
+    # Constructor function that will set self object attributes.
     def __init__(self, book_array, driver, department, course, section):
         self.driver = driver
         self.book_dict = {}
@@ -14,9 +16,11 @@ class Book_Scrapper:
         self.section = section
         self.book_array = book_array
 
+    # Function which complies a book's details from self object.
     def compile_book(self):
         self.get_book_info()
 
+    # Function which gets information of a book.
     def get_book_info(self):
         # print('get book')
         return_value = 1
@@ -134,6 +138,7 @@ class Book_Scrapper:
     #
     #     return 0
 
+    
     def get_books(self):
         # print("get books")
         try:
@@ -149,7 +154,9 @@ class Book_Scrapper:
 
         return children
 
-
+    # Function will get a bookstore link for a book inside the inventory.
+    # Returns 1 if a link does not exist or any error has occured.
+    # If successful, the url string will be returned.
     def get_book_link(self, index):
         try:
             # book_element = '//*[@id="courseGroup_366_366_366_22_W_100_203_4"]/div/div[{}]/div[2]/div[2]/div[1]/div/h3/a/span'.format(index + 1)
@@ -190,6 +197,8 @@ class Book_Scrapper:
     #
     #     return element
 
+    # Function that gets a book's price from the GMU bookstore.
+    # This will be placed underneath the bookstore link to easily compare prices from students.
     def get_book_price(self, book, seller,str):
         first = str.index('\n') + 1
         second = str[first::].index('\n')
@@ -204,8 +213,12 @@ class Book_Scrapper:
         if (index != -1):
             seller['buy'] = True
             # seller['buy_price'] = float(str[index + 8:str.find("Print") - 1:])
+            
+            # Variable will return -1 if a used print version of the book is not available.
             buy_index = str.find('Used Print')
             if(buy_index != -1):
+                
+                # Bot will display the used print price.
                 buy_str = str[buy_index - 9::]
                 dollar_index = buy_str.find('$')
                 buy_index = buy_str.find(' Used Print')
@@ -217,18 +230,23 @@ class Book_Scrapper:
             seller['buy_price'] = 0.0
 
         # for rental version
+        # Variable will return -1 if a rental version of the book is not available.
         index = str.find('Rental\n$')
         if (index != -1):
             # temp_str = str[index + 7]
             # dollar_index = temp_str.find('$')
+            
+            # Bot will display the used print rental price.
             seller['rent'] = True
             rent_index = str.find('Used Print Rental')
             if(rent_index != -1):
                 rent_str = str[rent_index - 9::]
                 dollar_index = rent_str.find('$')
                 rent_index = rent_str.find(' Used Print Rental')
-                seller['rent_price'] = float(rent_str[dollar_index + 1:rent_index:])
+                seller['rent_price'] = float(rent_str[dollar_index + 1:rent_index:])             
             elif(str.find('Rent Only') != -1):
+                
+                # If there is not used print rental, a rent only option will be printed.
                 rent_str = str[str.find('Rent Only') - 9::]
                 dollar_index = rent_str.find('$')
                 rent_index = rent_str.find(' Rent Only')
@@ -236,6 +254,7 @@ class Book_Scrapper:
             else:
                 seller['rent_price'] = float(str[index + 8:str.find(' New Print Rental') :])
         else:
+            # There is no rent option available for the book. Price is set to 0.0
             seller['rent'] = False
             seller['rent_price'] = 0.0
 
@@ -246,7 +265,8 @@ class Book_Scrapper:
             seller['digital'] = True
 
             rent_index = str.find('Digital Rental')
-
+            
+            # Bot will display the digital rental price if it is currently available.
             if(rent_index != -1):
                 rent_str = str[rent_index - 9::]
                 dollar_index = rent_str.find('$')
@@ -257,6 +277,7 @@ class Book_Scrapper:
                 temp = str[index:str.find('Digital Purchase') - 1:]
                 seller['digital_price'] = float(str[index + 9:str.find(' Digital Purchase'):])
         else:
+            # Digital version of the book does not exist.
             seller['digital'] = False
             seller['digital_price'] = 0.0
 
