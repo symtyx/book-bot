@@ -1,4 +1,6 @@
 # define book structure to enforce data structure
+from json import JSONEncoder
+import json
 
 class Book:
 	sellers = list()
@@ -19,21 +21,28 @@ class Seller:
 
 	def __init__(self, name, link, buy_price, rent_price, location, verified):
 		self.name = name
-		self.link = link
+		self.link = link.lower()
 
-		if buy_price == 0.00:
+		if float(buy_price) == 0.00:
 			self.buy = False
 		else:
 			self.buy = True
 
-		if (rent_price == 0.00):
+		if float(rent_price) == 0.00:
 			self.rent = False
 		else: 
 			self.rent = True
-		self.buy_price = buy_price
-		self.rent_price = rent_price
+		self.buy_price = float(buy_price)
+		self.rent_price = float(rent_price)
 		self.location = location
 		self.verified = verified
 
 		# self.email = email
+
+class SellerEncoder(JSONEncoder):
+	def default(self, object):
+		if isinstance(object, Seller):
+			return object.__dict__
+		else:
+			return json.JSONEncoder.default(self, object)
 

@@ -4,12 +4,13 @@ import os
 import requests
 import json
 import asyncio
+from book import Seller, SellerEncoder
 
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
-def insert_seller(dep, cnum, section, link, buy_price, rent_price, location, name):
-	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{section}/{name}/{link}/{buy_price}/{rent_price}/{location}")
+def insert_seller(dep, cnum, section, seller):
+	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{section}", data=SellerEncoder().encode(seller))
 	return response
 
 def verify_student(email, dep, cnum, section):
@@ -17,36 +18,23 @@ def verify_student(email, dep, cnum, section):
 		response = requests.post(f"http://localhost:8000/verify/{email}/{dep}/{cnum}/{section}")
 		return response
 
-	return "Please enter a valid email"
+	return False
 
 def get_book(department, cnum, section):
 	response = requests.get(f"http://localhost:8000/book/{department}/{cnum}/{section}")
-	if (response == None):
+	print(f"Response from get_book :: {response.status_code}")
+	if (response.status_code == 404):
 		return None
 
 	json_data = json.loads(response.text)
 	return json_data
 
-
-@client.event
-async def on_ready():
-	print("We have logged in as {0.user}".format(client))
-
-
-@client.event
-async def on_message(message):
-	if (message.content.startswith("!bot help")):
-		msg = "To check for a course textbook enter:\n'!bot check <department> <course_num>\n\nTo add yourself as a seller enter:\n'!bot add <department> <course_num> <your_name> <gmu_email> <buy_price> <rent_price> <city>'"
-		await message.channel.send(msg)
-
-	if (message.content.startswith('!bot check')):
-		args = message.content.split()
-		book = get_book(args[2], args[3], args[4])
-
+def format_embed(book, dep, num, section, message):
+	if (book != None):
 		if (book['name'] == ""):
 			embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\nThere are no course requirements for this course section\n", color=0xFFD700)
-			await message.channel.send(embed=embed)
-			return
+			# await message.channel.send(embed=embed)
+			return embed
 		
 		embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\n{book['name']}\n", color=0xFFD700)
 		for i in book['sellers']:
@@ -65,43 +53,73 @@ async def on_message(message):
 				embed.add_field(name=f"{i['name']}", value=f"[Bookstore link]({i['link']})\nOptions: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
 			else:
 				embed.add_field(name=f"{i['name']} ({i['link']})", value=f"Options: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
+		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+		embed.set_footer(text="Powered by students. This is not an official GMU service.")
+		return embed 
 
+	embed = discord.Embed(title=f"{dep} {num} {section} Textbook", description=f"\nSorry, we have no information on the requirements for this course.\n", color=0xFFD700)
+	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+	embed.set_footer(text="Powered by students. This is not an official GMU service.")
+	return embed
+
+
+@client.event
+async def on_message(message):
+	if (message.content.startswith("!bot help")):
+		embed = discord.Embed(title="Welcome to the Textbook Market", color=0xFFD700)
 		
+		embed.add_field(name="To SEARCH", value="!bot check <dep> <num> <section>\nExample: !bot check ACCT 203 005", inline=False)
+		embed.add_field(name="To SELL", value="!bot add <dep> <num> <section> <email> <sell> <rent>\nExample: !bot add ACCT 203 005 netid@gmu.edu 49.95 5.99", inline=False)
 		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
 		embed.set_footer(text="Powered by students. This is not an official GMU service.")
 		await message.channel.send(embed=embed)
 
-	if (message.content.startswith('!bot add')):
-		args = message.content.split()
+	if (message.content.startswith('!bot check')):
+		# Set message content (parameters) to uppercase
+		args = message.content.upper().split()
 		book = get_book(args[2], args[3], args[4])
-		if (book == None):
-			await message.channel.send("Course requirements not found.")
-			return
-
-		def check(msg):
-			return msg.author == message.author and 'Y' in msg.content
+	
+		embed = format_embed(book, args[2], args[3], args[4], message)
 		
-		embed = discord.Embed(title=f"Is this your book (enter Y/N)?\n\n", description=f"\n{book['name']}\n", color=0xFFD700)
 		await message.channel.send(embed=embed)
 
+	if (message.content.startswith('!bot add')):
+		args = message.content.upper().split()
 		try:
-			msg = await client.wait_for("message", check=check, timeout=30)
-		except asyncio.TimeoutError:
-			await message.channel.send("Sorry, you didn't reply in time.")
+			book = get_book(args[2], args[3], args[4])
 
-		if (msg.content):
-			# parameter 3 will save the seller with their discord user handle so prospective 
-			# buyers can add them on discord to exchange textbooks.
+			# Stringify message.author because json cannot serialize Member object
 			name = f"{message.author}"
-			regs = name.split('#')
+			seller = Seller(name, args[5], args[6], args[7], "Fairfax, VA", False)
 
-			# department | course number | section | email | buy price | rent price | location | display name
-			insert_seller(args[2], args[3], args[4], args[5], args[6], args[7], args[8], regs[0] + "@" + regs[1])
+			if (book == None):
+				embed = format_embed(book, args[2], args[3], args[4], message)
+				await message.channel.send(embed=embed)
+				return
 
-			# email | department | course number | section
-			verify_student(args[5], args[2], args[3], args[4])
-			await message.channel.send("Great, please check your email for verification!")
-		else:
-			await message.channel.send("Sorry you can't add that.")
+			def check(msg):
+				return msg.author == message.author and 'Y' in msg.content.upper()
+			
+			embed = discord.Embed(title=f"Is this your book (enter Y/N)?\n\n", description=f"\n{book['name']}\n", color=0xFFD700)
+			await message.channel.send(embed=embed)
+
+			try:
+				msg = await client.wait_for("message", check=check, timeout=30)
+			except asyncio.TimeoutError:
+				await message.channel.send("Sorry, you didn't reply in time.")
+
+			if (msg.content):
+				# parameter 3 will save the seller with their discord user handle so prospective 
+				# buyers can add them on discord to exchange textbooks.
+				if (verify_student(seller.link.lower(), args[2], args[3], args[4]) == False):
+					await message.channel.send("We're sorry, you cannot add you because you don't have a GMU email.")
+					return
+				# department | course number | section | email | buy price | rent price | location | display name
+				insert_seller(args[2], args[3], args[4], seller)
+				await message.channel.send("Great, please check your email for verification!")
+			else:
+				await message.channel.send("Sorry you don't have the required textbook to sell.")
+		except IndexError:
+			await message.channel.send("You are missing fields, please enter '!bot help' if you don't know what to enter.")
 
 

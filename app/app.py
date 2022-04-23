@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, abort
 from flask_mail import *
 from random import *
 from json import dumps, loads
@@ -30,7 +30,7 @@ def book(department, course_num, section):
 	
 	for book in document:	
 		return dumps(book)
-	return dumps(None)
+	return abort(404)
 
 
 @app.route("/book/insert-many", methods=["POST"])
@@ -46,29 +46,6 @@ def insert_books():
 @app.route('/book/insert', methods=["POST"])
 def insert_book():
 	dat = loads(request.data)
-	print(dat)
-	# Initialize book with the GMU bookstore seller information
-	# seller = Seller("GMU Bookstore", link, float(buy_price), float(rent_price), "Fairfax Campus", True)
-	
-	# # Initialize seller and book data with request params and seller data
-	# bookstore_dict = {"name": seller.name, "link": seller.link, 
-	# 				"buy": seller.buy,
-	# 				"buy_price": seller.buy_price, 
-	# 				"rent": seller.rent, 
-	# 				"rent_price": seller.rent_price, 
-	# 				"location": seller.location,
-	# 				"verified": seller.verified
-	# 			}
-	# book = Book(name, dep, cnum, bookstore_dict)
-
-	# # create dict struct to insert proper format into Mongo collection
-	# book_dict = {
-	# 	"name": book.name, 
-	# 	"department": book.department,
-	# 	"course": book.course_name, 
-	# 	"sellers": book.sellers
-	# 	}
-
 	# Insert book into Database
 	db.db.books_collection.insert_one(dat)
 	return "Success!"
@@ -76,29 +53,16 @@ def insert_book():
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax
 # Insert a student seller into the database as unverified until they enter a valid OTP code into the web link
-@app.route('/book/insert/seller/<dep>/<cnum>/<section>/<name>/<link>/<buy_price>/<rent_price>/<location>', methods=["POST"])
-def insert_seller(dep, cnum, section, name, link, buy_price, rent_price, location, methods=["POST"]):
-	# temporary solution to interrupted POST request due to # tag in string passed into request
-	name_arg = name.split("@")
-	name = name_arg[0] + "#" + name_arg[1]
-	
-	seller = Seller(name, link, float(buy_price), float(rent_price), location, False)
-	seller_dict = {
-			"name": seller.name, 
-			"link": seller.link, 
-			"buy": seller.buy,
-			"buy_price": seller.buy_price,
-			"rent": seller.rent,
-			"rent_price": seller.rent_price, 
-			"location": seller.location,
-			"verified": seller.verified,
-			}
+@app.route('/book/insert/seller/<dep>/<cnum>/<section>', methods=["POST"])
+def insert_seller(dep, cnum, section, methods=["POST"]):
+	# load request data 
+	data = loads(request.data)
 
 	query = {"department": dep, "course": cnum, "section": section}
 	book = db.db.books_collection.find(query)
 
 	for doc in book:
-		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller_dict}})
+		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": data}})
 	return "Added seller to book"
 
 # Send the student an email with an OTP code
@@ -130,8 +94,8 @@ def validate():
 		for doc in book:
 			db.db.books_collection.update_one(query, {"$set": {"sellers.$[t].verified": True}}, 
 												array_filters=[{"t.link": user_email}])
-		return "<h3>Your seller status has been activated.</h3>"  
-	return "<h3>failure, OTP does not match</h3>"
+		return render_template("confirmation.html") 
+	return "<h3>Sorry your OTP does not match</h3>"
 
 # Thread Flask App and Discord Bot to run side by side
 def flask_thread(func):
