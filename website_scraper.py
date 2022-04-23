@@ -12,6 +12,8 @@ from csv import reader
 import requests
 
 class Website_Scrapper:
+    
+    # Constructor function which installs web driver for Chrome.
     def __init__(self):
         options = webdriver.ChromeOptions()
         # options.headless = True
@@ -51,7 +53,8 @@ class Website_Scrapper:
         end = time.time()
         print(end - start)
 
-    # TODO implement feature to select campus
+    # Function that gets chooses a campus to find if a book is available from the GMU bookstore.
+    # Returns 1 if a book is not found on a campus. Returns 0 if found successfully.
     def select_campus_info(self):
         try:
             element = WebDriverWait(self.driver, 1).until(
@@ -73,7 +76,7 @@ class Website_Scrapper:
 
         return 0
 
-    # TODO implement feature to select term
+    # Selects a term from a user's command. Returns 1 if not successfully found.
     def select_term(self, term):
         try:
             element = WebDriverWait(self.driver, 1).until(
@@ -95,6 +98,8 @@ class Website_Scrapper:
 
         return 0
 
+    # Function that accepts a user's command for a specific department.
+    # Scrapper will search for the department and return 0 if properly executed, otherwise return 1.
     def select_department(self, department):
         try:
             element = WebDriverWait(self.driver, 1).until(
@@ -119,6 +124,7 @@ class Website_Scrapper:
 
         return 0
 
+    # Scrapper looks for a selected course from a command.
     def select_course(self, course):
         try:
             element = WebDriverWait(self.driver, 1).until(
@@ -132,6 +138,7 @@ class Website_Scrapper:
                 EC.presence_of_element_located((By.XPATH,
                                                 '/html/body/main/div[3]/div[2]/div/div/div/div[4]/div[2]/form/div/div[2]/div[2]/div[3]/div/div/span[2]/span/span[1]/input'))
             )
+            
             element.send_keys(course)
             # print('typed course 321')
 
@@ -181,8 +188,11 @@ class Website_Scrapper:
 
         return 0
 
-    # I use while loops because selenium isn't consistent with getting elements on a page
+    # Function that displays textbook information for a course inside the bot.
+    # Used while loops because selenium isn't consistent with getting elements on a page
     def fill_textbook_info(self, term, department, course, section):
+        
+        # Each while loop gets information of the book individually.
         return_value = 1
         while(return_value):
             return_value = self.select_campus_info()
@@ -213,26 +223,4 @@ class Website_Scrapper:
             return_value = self.retrieve_material()
             # print('retrieve_material')
 
-    # def main():
-    #     while(1):
-    #         start = time.time()
-    #         driver.get("https://gmu.bncollege.com/course-material/course-finder")
-    #
-    #         book_array = []
-    #         fill_textbook_info('summer', 'cs', 367, '001')
-    #         book = Book_Scrapper(book_array, driver, 'cs', '367')
-    #         book_info = book.get_book_info()
-    #
-    #         # curUrl = driver.current_url
-    #         # print(curUrl)
-    #
-    #         # time.sleep(1000)
-    #         end = time.time()
-    #         print(end - start)
-    #
-    #         driver.close()
-    #         driver = webdriver.Chrome("chromedriver.exe")
-
-
-    # if __name__ == "__main__":
-    #     main()
+ 
