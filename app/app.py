@@ -68,6 +68,7 @@ def insert_seller(dep, cnum, section, methods=["POST"]):
 # Send the student an email with an OTP code
 @app.route('/verify/<email>/<dep>/<cnum>/<section>', methods=["POST"])
 def verify(email, dep, cnum, section):  
+	# build otp string with dep-num-section to easily find seller when updating status
 	send_otp = f"{otp}-{dep}-{cnum}-{section}"
 	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
 	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/" 

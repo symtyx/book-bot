@@ -22,7 +22,7 @@ def verify_student(email, dep, cnum, section):
 
 def get_book(department, cnum, section):
 	response = requests.get(f"http://localhost:8000/book/{department}/{cnum}/{section}")
-	print(f"Response from get_book :: {response.status_code}")
+
 	if (response.status_code == 404):
 		return None
 
