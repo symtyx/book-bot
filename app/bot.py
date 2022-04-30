@@ -32,32 +32,35 @@ def get_book(department, cnum, section):
 def format_embed(book, dep, num, section, message):
 	if (book != None):
 		if (book['name'] == ""):
-			embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\nThere are no course requirements for this course section\n", color=0xFFD700)
+			embed = discord.Embed(title=f"{dep} {num}-{section} Textbook", description=f"\nThere are no requirements for this course section\n", color=0xFFD700)
 			# await message.channel.send(embed=embed)
 			return embed
 		
-		embed = discord.Embed(title=f"{book['department']} {book['course']} Textbook", description=f"\n{book['name']}\n", color=0xFFD700)
+		embed = discord.Embed(title=f"{dep} {num}-{section} Textbook", description=f"\n{book['name']}\n", color=0xFFD700)
 		for i in book['sellers']:
 			
-			prices = ""
-			if i['buy']:
-				options = "buy"
-				prices += str(i['buy_price'])
-				prices += " "
-			if i['rent']:
-				options += "/rent"
-				prices += str(i['rent_price'])
+			if i['verified'] == True:
+				prices = ""
+				if i['buy']:
+					options = "buy"
+					prices += str(i['buy_price'])
+					prices += " "
+				if i['rent']:
+					options += "/rent"
+					prices += str(i['rent_price'])
 
-			if i['name'] == "GMU Bookstore":
-				# hyperlink the bookstore link because it's long
-				embed.add_field(name=f"{i['name']}", value=f"[Bookstore link]({i['link']})\nOptions: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
+				if i['name'] == "GMU Bookstore":
+					# hyperlink the bookstore link because it's long
+					embed.add_field(name=f"{i['name']}", value=f"[Bookstore link]({i['link']})\nOptions: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
+				else:
+					embed.add_field(name=f"{i['name']} ({i['link']})", value=f"Options: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
 			else:
-				embed.add_field(name=f"{i['name']} ({i['link']})", value=f"Options: {options}\nPrices: {prices}\nLocation: {i['location']}",inline=False)
+				continue
 		embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
 		embed.set_footer(text="Powered by students. This is not an official GMU service.")
 		return embed 
 
-	embed = discord.Embed(title=f"{dep} {num} {section} Textbook", description=f"\nSorry, we have no information on the requirements for this course.\n", color=0xFFD700)
+	embed = discord.Embed(title=f"{dep} {num}-{section} Textbook", description=f"\nWe're sorry, we have no information for this course at this time.\nFeel free to check the official GMU bookstore: [Bookstore Link](https://gmu.bncollege.com/course-material/course-finder)", color=0xFFD700)
 	embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
 	embed.set_footer(text="Powered by students. This is not an official GMU service.")
 	return embed

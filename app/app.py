@@ -35,7 +35,7 @@ def book(department, course_num, section):
 
 @app.route("/book/insert-many", methods=["POST"])
 def insert_books():
-	with open('../book_data.json') as file:
+	with open('book_data.json') as file:
 		file_data = json.load(file)
 	# db.db.books_collection.insert_many(file_data)
 
@@ -57,6 +57,7 @@ def insert_book():
 def insert_seller(dep, cnum, section, methods=["POST"]):
 	# load request data 
 	data = loads(request.data)
+	data['verified'] = False;
 
 	query = {"department": dep, "course": cnum, "section": section}
 	book = db.db.books_collection.find(query)

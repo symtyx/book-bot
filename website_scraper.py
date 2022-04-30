@@ -22,14 +22,14 @@ class Website_Scrapper:
         book_array = []
         start = time.time()
 
-        with open("json.csv", "r") as read_obj:
+        with open("test.csv", "r") as read_obj:
             csv_reader = reader(read_obj)
 
             for row in csv_reader:
                 self.driver.get("https://gmu.bncollege.com/course-material/course-finder")
                 args = row[0].split(" ")
-                if (args[1] == "303"):
-                    break
+                # if (args[1] == "303"):
+                #     break
                 
                 # ACCT 203 3D1 (Hangs)
                 # args[0] = Department | args[1] = Course Number | args[2] = Section
