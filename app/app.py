@@ -8,7 +8,7 @@ from functools import partial
 import time
 import os
 import db
-from book import Book, Seller
+from book import Book, Seller, SellerEncoder
 import json 
 
 app = Flask(__name__)
@@ -53,29 +53,40 @@ def insert_book():
 
 # example: localhost:8000/book/insert/seller/Mostafa/mostaf@gmu.edu/true/false/Faifax
 # Insert a student seller into the database as unverified until they enter a valid OTP code into the web link
-@app.route('/book/insert/seller/<dep>/<cnum>/<section>', methods=["POST"])
-def insert_seller(dep, cnum, section, methods=["POST"]):
+@app.route('/book/insert/seller', methods=["POST"])
+def insert_seller():
 	# load request data 
 	data = loads(request.data)
-	data['verified'] = False;
+	seller = Seller(data['seller']['name'], data['seller']['link'], data['seller']['buy_price'], data['seller']['rent_price'], data['seller']['location'], False)
 
-	query = {"department": dep, "course": cnum, "section": section}
+	query = {"department": str(data['department']).upper(), "course": str(data['course_num']).upper(), "section": str(data['section']).upper()}
 	book = db.db.books_collection.find(query)
 
 	for doc in book:
-		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": data}})
-	return "Added seller to book"
+		db.db.books_collection.update_one({"_id": doc["_id"]}, {"$push": {"sellers": seller.__dict__}})
+	return dumps(data)
 
 # Send the student an email with an OTP code
-@app.route('/verify/<email>/<dep>/<cnum>/<section>', methods=["POST"])
-def verify(email, dep, cnum, section):  
+@app.route('/verify', methods=["POST"])
+def verify():  
 	# build otp string with dep-num-section to easily find seller when updating status
-	send_otp = f"{otp}-{dep}-{cnum}-{section}"
-	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[email])  
+	data = loads(request.data)
+
+	query = {"department": data['department'].upper(), "course": str(data['course_num']).upper(), "section": str(data['section']).upper()}
+	document = db.db.books_collection.find(query, {"_id": 0})
+	book_obj = dict()
+	for book in document:	
+		book_obj = book
+
+	if len(book_obj) == 0:
+		return abort(404)
+
+	send_otp = f"{otp}-{data['department']}-{data['course_num']}-{data['section']}"
+	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[data['email']])  
 	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/" 
 	mail.send(msg)  
 
-	return "Success"
+	return "Successfully sent email"
 
 # Webpage to return email and OTP form
 @app.route('/', methods=["GET"])

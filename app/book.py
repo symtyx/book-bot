@@ -39,6 +39,34 @@ class Seller:
 
 		# self.email = email
 
+class Insert:
+	def __init__(self, department, course_num, section, seller):
+		self.department = department
+		self.course_num = course_num
+		self.section = section
+		self.seller = seller.__dict__
+
+class Verify:
+	def __init__(self, email, department, course_num, section):
+		self.email = email
+		self.department = department
+		self.course_num = course_num
+		self.section = section
+
+class InsertEncoder(JSONEncoder):
+	def default(self, object):
+		if isinstance(object, Insert):
+			return object.__dict__
+		else:
+			return json.JSONEncoder.default(self, object)
+
+class VerifyEncoder(JSONEncoder):
+	def default(self, object):
+		if isinstance(object, Verify):
+			return object.__dict__
+		else:
+			return json.JSONEncoder.default(self, object)
+
 class SellerEncoder(JSONEncoder):
 	def default(self, object):
 		if isinstance(object, Seller):

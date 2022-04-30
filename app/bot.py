@@ -4,18 +4,20 @@ import os
 import requests
 import json
 import asyncio
-from book import Seller, SellerEncoder
+from book import Seller, SellerEncoder, Verify, VerifyEncoder, InsertEncoder, Insert
 
 
 client = discord.Client()
 # client = commands.Bot(command_prefix="!", case_insensitive=True)
-def insert_seller(dep, cnum, section, seller):
-	response = requests.post(f"http://localhost:8000/book/insert/seller/{dep}/{cnum}/{section}", data=SellerEncoder().encode(seller))
+def insert_seller(insert):
+	response = requests.post(f"http://localhost:8000/book/insert/seller", data=InsertEncoder().encode(insert))
 	return response
 
-def verify_student(email, dep, cnum, section):
-	if ('@gmu.edu' in email):
-		response = requests.post(f"http://localhost:8000/verify/{email}/{dep}/{cnum}/{section}")
+def verify_student(verify):
+	if ('@gmu.edu' in verify.email):
+		response = requests.post(f"http://localhost:8000/verify", data=VerifyEncoder().encode(verify))
+		if (response.status_code == 404):
+			return False
 		return response
 
 	return False
@@ -94,6 +96,7 @@ async def on_message(message):
 			# Stringify message.author because json cannot serialize Member object
 			name = f"{message.author}"
 			seller = Seller(name, args[5], args[6], args[7], "Fairfax, VA", False)
+			insert = Insert(args[2], args[3], args[4], seller)
 
 			if (book == None):
 				embed = format_embed(book, args[2], args[3], args[4], message)
@@ -114,11 +117,12 @@ async def on_message(message):
 			if (msg.content):
 				# parameter 3 will save the seller with their discord user handle so prospective 
 				# buyers can add them on discord to exchange textbooks.
-				if (verify_student(seller.link.lower(), args[2], args[3], args[4]) == False):
-					await message.channel.send("We're sorry, you cannot add you because you don't have a GMU email.")
+				verify_data = Verify(seller.link.lower(), args[2], args[3], args[4])
+				if (verify_student(verify_data) == False):
+					await message.channel.send("We're sorry, you cannot add you because you don't have a GMU email or the course does not exist.")
 					return
 				# department | course number | section | email | buy price | rent price | location | display name
-				insert_seller(args[2], args[3], args[4], seller)
+				insert_seller(insert)
 				await message.channel.send("Great, please check your email for verification!")
 			else:
 				await message.channel.send("Sorry you don't have the required textbook to sell.")
