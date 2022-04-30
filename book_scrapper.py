@@ -113,31 +113,6 @@ class Book_Scrapper:
             return 1
         return 0
 
-    # def wait_for_page_to_load(self):
-    #     try:
-    #         WebDriverWait(self.driver, 10).until(
-    #             EC.presence_of_element_located((By.TAG_NAME, 'head')))
-    #     except:
-    #         return 1
-    #     return 0
-
-    # def get_book_element(self, index):
-    #     print("get book element")
-    #     try:
-    #         element = WebDriverWait(self.driver, 1).until(
-    #             EC.presence_of_element_located((By.CLASS_NAME,
-    #                                             'js-bned-item-name-text'))
-    #         )
-    #         children = self.driver.find_elements(by=By.CLASS_NAME, value='js-bned-item-name-text')
-    #
-    #         while(self.driver.current_url == 'https://gmu.bncollege.com/course-material-listing-page?bypassCustomerAdoptions=true'):
-    #             children[index].click()
-    #             print('click')
-    #     except:
-    #         return 1
-    #
-    #     return 0
-
     
     def get_books(self):
         # print("get books")
@@ -178,24 +153,6 @@ class Book_Scrapper:
             return 1
     
         return strUrl
-
-    # def get_book_text_element(self):
-    #     print('text element')
-    #     try:
-    #         # element = WebDriverWait(self.driver, 1).until(
-    #         #     EC.presence_of_element_located((By.ID, 'courseGroup_366_366_366_22_W_270_367_1'))
-    #         # )
-    #         element = WebDriverWait(self.driver, 1).until(
-    #             EC.presence_of_element_located((By.XPATH,
-    #                                             '/html/body/main/div[3]/div[2]/div[4]/div[2]/div/div[2]/div'))
-    #         )
-    #
-    #         if(element.text == ''):
-    #             raise Exception
-    #     except:
-    #         return 1
-    #
-    #     return element
 
     # Function that gets a book's price from the GMU bookstore.
     # This will be placed underneath the bookstore link to easily compare prices from students.
