@@ -31,7 +31,6 @@ Jinja2==3.0.3
 MarkupSafe==2.1.0
 multidict==6.0.2
 networkx==2.7.1
-numpy==1.22.3
 outcome==1.1.0
 packaging==21.3
 pandas==1.4.2

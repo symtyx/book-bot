@@ -82,6 +82,7 @@ def verify():
 		return abort(404)
 
 	send_otp = f"{otp}-{data['department']}-{data['course_num']}-{data['section']}"
+	print(f"Verify Email::: {data['email']}")
 	msg = Message('Verify Student Seller', sender='queuedelivery@gmail.com', recipients=[data['email']])  
 	msg.body = f"Please click on the link to verify your student seller status\n {send_otp}\nhttp://localhost:8000/" 
 	mail.send(msg)  

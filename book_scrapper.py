@@ -37,8 +37,9 @@ class Book_Scrapper:
         while(return_value == 1):
             return_value = self.get_books()
             if(self.check_book() == 0):
-                book_info['name'] = ''
-                self.book_array.append(book_info)
+                # handle courses that do not have requirements
+                # book_info['name'] = ''
+                # self.book_array.append(book_info)
                 return 0
 
         # stores the different books

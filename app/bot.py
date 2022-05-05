@@ -14,6 +14,7 @@ def insert_seller(insert):
 	return response
 
 def verify_student(verify):
+	print(verify.email)
 	if ('@gmu.edu' in verify.email):
 		response = requests.post(f"http://localhost:8000/verify", data=VerifyEncoder().encode(verify))
 		if (response.status_code == 404):
